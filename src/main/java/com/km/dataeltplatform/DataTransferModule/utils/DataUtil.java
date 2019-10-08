@@ -1,11 +1,8 @@
-package com.km.dataeltplatform.utils;
+package com.km.dataeltplatform.DataTransferModule.utils;
 
 import com.alibaba.fastjson.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataUtil {
     public static String coverJsonObject2String(JSONObject jsonObject){
@@ -27,5 +24,15 @@ public class DataUtil {
         map.put("key2","value2");
         JSONObject jsonObject = new JSONObject(map);
         System.out.println(jsonObject);
+    }
+
+    public static List<String> getMySQLDataStruct(List<Map<String, String>> mysqlData) {
+        List<String> dataStruct = new ArrayList<>();
+        if(mysqlData==null||mysqlData.size()==0)
+            throw new NullPointerException("数据库内容为空");
+        Map<String,String> struct = mysqlData.get(0);
+        for(Map.Entry<String,String> entry:struct.entrySet())
+            dataStruct.add(entry.getKey());
+        return dataStruct;
     }
 }

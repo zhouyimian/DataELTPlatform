@@ -1,14 +1,9 @@
-package com.km.dataeltplatform.service;
+package com.km.dataeltplatform.DataTransferModule.service;
 
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class HiveService {

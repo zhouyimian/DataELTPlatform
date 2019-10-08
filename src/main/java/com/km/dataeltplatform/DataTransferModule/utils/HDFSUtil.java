@@ -1,4 +1,4 @@
-package com.km.dataeltplatform.utils;
+package com.km.dataeltplatform.DataTransferModule.utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
