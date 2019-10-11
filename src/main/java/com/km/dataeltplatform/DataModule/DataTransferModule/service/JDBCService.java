@@ -1,4 +1,4 @@
-package com.km.dataeltplatform.DataTransferModule.service;
+package com.km.dataeltplatform.DataModule.DataTransferModule.service;
 
 import org.springframework.stereotype.Service;
 

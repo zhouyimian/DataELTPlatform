@@ -1,4 +1,4 @@
-package com.km.dataeltplatform.DataTransferModule.utils;
+package com.km.dataeltplatform.DataModule.DataTransferModule.utils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.*;
