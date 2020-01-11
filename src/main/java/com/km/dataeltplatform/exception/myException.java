@@ -1,4 +1,4 @@
-package com.km.dataeltplatform.common;
+package com.km.dataeltplatform.exception;
 
 public class myException {
     private String errormesaage;

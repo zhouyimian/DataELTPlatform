@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 @Component
 @Mapper
 public interface UserMapper {
-    @Select({"select * from user where username = #{username} and password = #{password} "})
-    public User login(@Param("username") String username, @Param("password") String password);
+    @Select({"select * from user where Username = #{Username} and Password = #{Password} "})
+    public User login(@Param("Username") String username, @Param("Password") String password);
 
-    @Insert({"insert into user values(#{userid},#{username},#{password}) "})
-    public void register(@Param("userid") String userid,@Param("username") String username, @Param("password") String password);
+    @Insert({"insert into user values(#{Userid},#{Username},#{Password}) "})
+    public void register(@Param("Userid") String userid,@Param("Username") String username, @Param("Password") String password);
 }

@@ -2,7 +2,7 @@ package com.km.dataeltplatform.UserModule.controller;
 
 import com.km.dataeltplatform.UserModule.domain.User;
 import com.km.dataeltplatform.UserModule.service.UserService;
-import com.km.dataeltplatform.common.myException;
+import com.km.dataeltplatform.exception.myException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

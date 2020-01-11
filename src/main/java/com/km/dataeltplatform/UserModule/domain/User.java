@@ -1,40 +1,40 @@
 package com.km.dataeltplatform.UserModule.domain;
 
 public class User {
-    private String userid;
-    private String username;
-    private String password;
-
-    public String getUserid() {
-        return userid;
-    }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    private String Userid;
+    private String Username;
+    private String Password;
 
     @Override
     public String toString() {
-        return "user{" +
-                "userid='" + userid + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
+        return "User{" +
+                "Userid='" + Userid + '\'' +
+                ", Username='" + Username + '\'' +
+                ", Password='" + Password + '\'' +
                 '}';
+    }
+
+    public String getUserid() {
+        return Userid;
+    }
+
+    public void setUserid(String userid) {
+        Userid = userid;
+    }
+
+    public String getUsername() {
+        return Username;
+    }
+
+    public void setUsername(String username) {
+        Username = username;
+    }
+
+    public String getPassword() {
+        return Password;
+    }
+
+    public void setPassword(String password) {
+        Password = password;
     }
 }
