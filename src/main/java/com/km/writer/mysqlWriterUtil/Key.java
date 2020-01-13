@@ -1,4 +1,4 @@
-package com.km.writer.util;
+package com.km.writer.mysqlWriterUtil;
 
 public final class Key {
     public final static String JDBC_URL = "jdbcUrl";

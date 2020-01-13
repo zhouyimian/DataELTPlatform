@@ -1,4 +1,4 @@
-package com.km.reader.util;
+package com.km.reader.mysqlReaderUtil;
 
 
 import com.alibaba.druid.sql.parser.SQLParserUtils;

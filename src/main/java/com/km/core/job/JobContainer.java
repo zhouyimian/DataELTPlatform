@@ -6,8 +6,10 @@ import com.km.common.util.Configuration;
 import com.km.core.AbstractContainer;
 import com.km.core.util.FrameworkErrorCode;
 import com.km.core.util.container.CoreConstant;
+import com.km.reader.MongoDBReader;
 import com.km.reader.MysqlReader;
 import com.km.reader.Reader;
+import com.km.writer.MongoDBWriter;
 import com.km.writer.MysqlWriter;
 import com.km.writer.Writer;
 import org.slf4j.Logger;
@@ -30,8 +32,6 @@ public class JobContainer extends AbstractContainer {
 
     private String writerPluginName;
 
-    private long jobId;
-
     /**
      * reader和writer jobContainer的实例
      */
@@ -42,8 +42,6 @@ public class JobContainer extends AbstractContainer {
 
     private Integer needChannelNumber;
 
-    private int totalStage = 1;
-
     private ExecutorService taskExecutorService;
 
 
@@ -52,18 +50,16 @@ public class JobContainer extends AbstractContainer {
     }
 
     /**
-     * jobContainer主要负责的工作全部在start()里面，包括init、prepare、split、scheduler、
-     * post以及destroy和statistics
+     * jobContainer主要负责的工作全部在start()里面，包括init、split、scheduler
      */
     @Override
     public void start() {
         LOG.info("DataX jobContainer starts job.");
         try {
-            this.preInit();
             LOG.debug("jobContainer starts to do init ...");
             this.init();
             LOG.info("jobContainer starts to do split ...");
-            this.totalStage = this.split();
+            this.split();
             LOG.info("jobContainer starts to do schedule ...");
             this.schedule();
             LOG.debug("jobContainer starts to do post ...");
@@ -79,17 +75,6 @@ public class JobContainer extends AbstractContainer {
         }
     }
 
-    public void preInit(){
-        this.jobId = this.configuration.getLong(
-                CoreConstant.DATAX_CORE_CONTAINER_JOB_ID, -1);
-
-        if (this.jobId < 0) {
-            LOG.info("Set jobId = 0");
-            this.jobId = 0;
-            this.configuration.set(CoreConstant.DATAX_CORE_CONTAINER_JOB_ID,
-                    this.jobId);
-        }
-    }
     /**
      * reader和writer的初始化
      */
@@ -99,9 +84,8 @@ public class JobContainer extends AbstractContainer {
         this.writerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME);
 
         //这里得根据plugname获取到类的路径进行初始化，这里只是简单创建下
-        this.jobReader = new MysqlReader.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER));
-        this.jobWriter = new MysqlWriter.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER));
-
+        this.jobReader = new MongoDBReader.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER));
+        this.jobWriter = new MongoDBWriter.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER));
     }
     private int split() {
         this.needChannelNumber = this.configuration.getInt(CoreConstant.DATAX_JOB_SETTING_SPEED_CHANNEL);

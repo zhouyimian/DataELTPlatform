@@ -1,4 +1,4 @@
-package com.km.reader.util;
+package com.km.reader.mysqlReaderUtil;
 
 /**
  * 编码，时区等配置，暂未定.

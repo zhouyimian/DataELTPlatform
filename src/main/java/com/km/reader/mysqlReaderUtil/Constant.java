@@ -1,4 +1,4 @@
-package com.km.reader.util;
+package com.km.reader.mysqlReaderUtil;
 
 public final class Constant {
     public static final String PK_TYPE = "pkType";

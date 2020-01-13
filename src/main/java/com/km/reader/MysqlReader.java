@@ -3,8 +3,7 @@ package com.km.reader;
 import com.alibaba.fastjson.JSONObject;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
-import com.km.core.util.container.CoreConstant;
-import com.km.reader.util.*;
+import com.km.reader.mysqlReaderUtil.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -32,6 +31,9 @@ public class MysqlReader extends Reader {
             boolean isTableMode = true;
 
             String column = this.getConfiguration().getString(Key.COLUMN);
+            column = column.replace("[","");
+            column = column.replace("]","");
+            column = column.replace("\"","");
             String where = this.getConfiguration().getString(Key.WHERE, null);
 
             List<Object> conns = this.getConfiguration().getList(Constant.CONN_MARK, Object.class);

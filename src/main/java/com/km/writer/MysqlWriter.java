@@ -3,14 +3,13 @@ package com.km.writer;
 import com.alibaba.fastjson.JSONObject;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
-import com.km.reader.util.DBUtil;
-import com.km.reader.util.DataBaseType;
-import com.km.writer.util.WriterUtil;
+import com.km.reader.mysqlReaderUtil.DBUtil;
+import com.km.reader.mysqlReaderUtil.DataBaseType;
+import com.km.writer.mysqlWriterUtil.WriterUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 

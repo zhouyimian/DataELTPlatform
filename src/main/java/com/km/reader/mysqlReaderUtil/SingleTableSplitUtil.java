@@ -1,4 +1,4 @@
-package com.km.reader.util;
+package com.km.reader.mysqlReaderUtil;
 
 
 import com.alibaba.fastjson.JSON;
@@ -32,7 +32,7 @@ public class SingleTableSplitUtil {
         List<Configuration> pluginParams = new ArrayList<Configuration>();
         List<String> rangeList;
         String splitPkName = configuration.getString(Key.SPLIT_PK);
-        String column = configuration.getString(Key.COLUMN);
+        String column = configuration.get(Key.COLUMN).toString();
         column = column.replace("[","");
         column = column.replace("]","");
         column = column.replace("\"","");
@@ -139,10 +139,13 @@ public class SingleTableSplitUtil {
     private static Pair<Object, Object> getPkRange(DataBaseType dataBaseType,Configuration configuration) {
         String pkRangeSQL = genPKRangeSQL(configuration);
 
+//        String jdbcURL = (String)configuration.get(Key.JDBC_URL);
+//        jdbcURL = jdbcURL.replace("[\"","");
+//        jdbcURL = jdbcURL.replace("\"]","");
+
         String jdbcURL = configuration.getString(Key.JDBC_URL);
         jdbcURL = jdbcURL.replace("[\"","");
         jdbcURL = jdbcURL.replace("\"]","");
-
         String username = configuration.getString(Key.USERNAME);
         String password = configuration.getString(Key.PASSWORD);
         String table = configuration.getString(Key.TABLE);
@@ -238,7 +241,7 @@ public class SingleTableSplitUtil {
             }
         } catch (Exception e) {
             throw DataETLException.asDataETLException(DBUtilErrorCode.ILLEGAL_SPLIT_PK,
-                    "DataX获取切分主键(splitPk)字段类型失败. 该错误通常是系统底层异常导致. 请联系旺旺:askdatax或者DBA处理.");
+                    "获取切分主键(splitPk)字段类型失败. 该错误通常是系统底层异常导致.");
         }
         return ret;
     }
@@ -249,7 +252,6 @@ public class SingleTableSplitUtil {
     private static boolean isLongType(int type) {
         boolean isValidLongType = type == Types.BIGINT || type == Types.INTEGER
                 || type == Types.SMALLINT || type == Types.TINYINT;
-
 
         return isValidLongType;
     }

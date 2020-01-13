@@ -1,55 +1,71 @@
 {
-    "job":{
-        "setting":{
-            "speed":{
-                "channel":5
-            }
-        },
-        "content":{
-            "reader":{
-                "name":"mysqlreader",
-                "parameter":{
-                    "username":"root",
-                    "password":"313976009",
-                    "column":[
-                        "uid",
-                        "time",
-                        "username",
-                        "password"
-                    ],
-                    "splitPk":"uid",
-                    "connection":[
-                        {
-                            "table":[
-                                "user"
-                            ],
-                            "jdbcUrl":
-                              "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT"
-                        }
-                    ]
-                }
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    },
+    "content": {
+      "reader": {
+        "name": "mongodbreader",
+        "parameter": {
+          "address": [
+            "192.168.43.57:27017"
+          ],
+          "username": "",
+          "password": "",
+          "dbName": "recommender",
+          "collectionName": "testFrom",
+          "column": [
+            {
+              "name": "title",
+              "type": "string"
             },
-          "writer": {
-            "name": "mysqlwriter",
-            "parameter": {
-              "username": "root",
-              "password": "313976009",
-              "column": [
-                "uid",
-                "time",
-                "username",
-                "password"
-              ],
-              "connection": [
-                {
-                  "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT",
-                  "table": [
-                    "test"
-                  ]
-                }
-              ]
+            {
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "name": "url",
+              "type": "string"
+            },
+            {
+              "name": "likes",
+              "type": "Double"
             }
-          }
+          ]
         }
+      },
+      "writer": {
+        "name": "mongodbwriter",
+        "parameter": {
+          "address": [
+            "192.168.43.57:27017"
+          ],
+          "userName": "",
+          "userPassword": "",
+          "dbName": "recommender",
+          "collectionName": "testTo",
+          "column": [
+            {
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "name": "url",
+              "type": "string"
+            },
+            {
+              "name": "likes",
+              "type": "Double"
+            }
+          ]
+        }
+      }
     }
+  }
 }

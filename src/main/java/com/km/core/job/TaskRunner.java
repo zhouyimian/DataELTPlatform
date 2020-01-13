@@ -4,8 +4,10 @@ import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
 import com.km.core.transport.channel.memory.MemoryChannel;
 import com.km.core.util.container.CoreConstant;
+import com.km.reader.MongoDBReader;
 import com.km.reader.MysqlReader;
 import com.km.reader.Reader;
+import com.km.writer.MongoDBWriter;
 import com.km.writer.MysqlWriter;
 import com.km.writer.Writer;
 
@@ -33,13 +35,13 @@ public class TaskRunner implements Runnable {
 
     private Writer.Task createWriter(Configuration configuration) {
         String writerName = this.configuration.getString(CoreConstant.JOB_WRITER_NAME);
-        return new MysqlWriter.Task(configuration);
+        return new MongoDBWriter.Task(configuration);
     }
 
     private Reader.Task createReader(Configuration configuration) {
         String readerName = this.configuration.getString(CoreConstant.JOB_READER_NAME);
 
-        return new MysqlReader.Task(configuration);
+        return new MongoDBReader.Task(configuration);
     }
 
     @Override

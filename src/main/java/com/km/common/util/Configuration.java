@@ -15,10 +15,6 @@ import java.util.*;
 
 public class Configuration {
 
-    /**
-     * 对于加密的keyPath，需要记录下来
-     * 为的是后面分布式情况下将该值加密后抛到DataXServer中
-     */
     private Set<String> secretKeyPathSet =
             new HashSet<String>();
 
@@ -599,7 +595,7 @@ public class Configuration {
         if (null == result) {
             throw DataETLException.asDataETLException(
                     CommonErrorCode.RUNTIME_ERROR,
-                    String.format("配置文件对应Key[%s]并不存在，该情况是代码编程错误. 请联系DataX团队的同学.", path));
+                    String.format("配置文件对应Key[%s]并不存在", path));
         }
 
         this.set(path, null);
@@ -737,7 +733,7 @@ public class Configuration {
         }
 
         throw DataETLException.asDataETLException(CommonErrorCode.RUNTIME_ERROR,
-                String.format("值[%s]无法适配您提供[%s]， 该异常代表系统编程错误, 请联系DataX开发团队!",
+                String.format("值[%s]无法适配您提供[%s]",
                         ToStringBuilder.reflectionToString(object), path));
     }
 
@@ -780,7 +776,7 @@ public class Configuration {
         if (null == paths) {
             throw DataETLException.asDataETLException(
                     CommonErrorCode.RUNTIME_ERROR,
-                    "Path不能为null，该异常代表系统编程错误, 请联系DataX开发团队 !");
+                    "Path不能为null");
         }
 
         if (1 == paths.size() && StringUtils.isBlank(paths.get(0))) {
@@ -809,7 +805,7 @@ public class Configuration {
 
             throw DataETLException.asDataETLException(
                     CommonErrorCode.RUNTIME_ERROR, String.format(
-                            "路径[%s]出现非法值类型[%s]，该异常代表系统编程错误, 请联系DataX开发团队! .",
+                            "路径[%s]出现非法值类型[%s]",
                             StringUtils.join(paths, "."), path));
         }
 
@@ -897,7 +893,7 @@ public class Configuration {
         }
 
         throw DataETLException.asDataETLException(CommonErrorCode.RUNTIME_ERROR,
-                "该异常代表系统编程错误, 请联系DataX开发团队 !");
+                "该异常代表系统编程错误");
     }
 
     private Object findObject(final String path) {
@@ -933,7 +929,7 @@ public class Configuration {
         Object result = ((Map<String, Object>) target).get(index);
         if (null == result) {
             throw new IllegalArgumentException(String.format(
-                    "您提供的配置文件有误. 路径[%s]值为null，datax无法识别该配置. 请检查您的配置并作出修改.", index));
+                    "您提供的配置文件有误. 路径[%s]值为null", index));
         }
 
         return result;
@@ -952,7 +948,7 @@ public class Configuration {
         if (!StringUtils.isNumeric(index)) {
             throw new IllegalArgumentException(
                     String.format(
-                            "系统编程错误，列表下标必须为数字类型，但该节点发现实际类型是[%s] ，该异常代表系统编程错误, 请联系DataX开发团队 !",
+                            "系统编程错误，列表下标必须为数字类型，但该节点发现实际类型是[%s]",
                             index));
         }
 
@@ -998,7 +994,7 @@ public class Configuration {
     private void checkPath(final String path) {
         if (null == path) {
             throw new IllegalArgumentException(
-                    "系统编程错误, 该异常代表系统编程错误, 请联系DataX开发团队!.");
+                    "系统编程错误, 该异常代表系统编程错误");
         }
 
         for (final String each : StringUtils.split(".")) {

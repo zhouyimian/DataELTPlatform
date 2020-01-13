@@ -1,4 +1,4 @@
-package com.km.reader.util;
+package com.km.reader.mysqlReaderUtil;
 
 
 import com.km.common.util.Configuration;
@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by liuyi on 15/9/18.
- */
+
 public class HintUtil {
     private static final Logger LOG = LoggerFactory.getLogger(HintUtil.class);
 

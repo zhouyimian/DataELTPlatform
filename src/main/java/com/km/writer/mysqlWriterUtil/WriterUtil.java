@@ -1,11 +1,10 @@
-package com.km.writer.util;
+package com.km.writer.mysqlWriterUtil;
 
 
 import com.alibaba.druid.sql.parser.ParserException;
 import com.km.common.exception.DataETLException;
 import com.km.common.util.Configuration;
-import com.km.core.util.container.CoreConstant;
-import com.km.reader.util.*;
+import com.km.reader.mysqlReaderUtil.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
