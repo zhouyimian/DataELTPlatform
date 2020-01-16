@@ -1,15 +1,15 @@
 package com.km.core.transport.channel;
 
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+
+import com.km.common.element.Record;
+
 
 public abstract class Channel {
-    JSONArray jsonArray;
 
-    public abstract void add(JSONObject object);
+    public abstract void add(Record record);
 
-    public abstract JSONObject remove();
+    public abstract Record remove();
 
 
 }

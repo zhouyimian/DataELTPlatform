@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.km.common.element.*;
 import com.km.common.exception.DataETLException;
+import com.km.common.record.DefaultRecord;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
 import com.km.core.util.container.CoreConstant;
@@ -17,11 +19,9 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import org.apache.parquet.filter2.predicate.Operators;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class MongoDBReader extends Reader {
@@ -74,7 +74,7 @@ public class MongoDBReader extends Reader {
         private boolean isObjectId = true;
 
         public Task(Configuration configuration) {
-            super(configuration.getConfiguration(CoreConstant.JOB_READER_PARAMETER));
+            super(configuration);
             this.readerSliceConfig = super.getConfiguration();
             this.userName = readerSliceConfig.getString(KeyConstant.MONGO_USER_NAME, readerSliceConfig.getString(KeyConstant.MONGO_USERNAME));
             this.password = readerSliceConfig.getString(KeyConstant.MONGO_USER_PASSWORD, readerSliceConfig.getString(KeyConstant.MONGO_PASSWORD));
@@ -123,7 +123,7 @@ public class MongoDBReader extends Reader {
             dbCursor = col.find(filter).iterator();
             while (dbCursor.hasNext()) {
                 Document item = dbCursor.next();
-                JSONObject object = new JSONObject();
+                Record record = new DefaultRecord();
                 Iterator columnItera = mongodbColumnMeta.iterator();
                 while (columnItera.hasNext()) {
                     JSONObject column = (JSONObject) columnItera.next();
@@ -150,22 +150,35 @@ public class MongoDBReader extends Reader {
                     }
                     if (tempCol == null) {
                         //continue; 这个不能直接continue会导致record到目的端错位
-                        object.put(column.getString(KeyConstant.COLUMN_NAME), null);
-                    } else if(KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))){
-                        String splitter = column.getString(KeyConstant.COLUMN_SPLITTER);
-                        if (Strings.isNullOrEmpty(splitter)) {
-                            throw DataETLException.asDataETLException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
-                                    MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
+                        record.addColumn(new StringColumn(null));
+                    } else if (tempCol instanceof Double) {
+                        //TODO deal with Double.isNaN()
+                        record.addColumn(new DoubleColumn((Double) tempCol));
+                    } else if (tempCol instanceof Boolean) {
+                        record.addColumn(new BoolColumn((Boolean) tempCol));
+                    } else if (tempCol instanceof Date) {
+                        record.addColumn(new DateColumn((Date) tempCol));
+                    } else if (tempCol instanceof Integer) {
+                        record.addColumn(new LongColumn((Integer) tempCol));
+                    }else if (tempCol instanceof Long) {
+                        record.addColumn(new LongColumn((Long) tempCol));
+                    } else {
+                        if(KeyConstant.isArrayType(column.getString(KeyConstant.COLUMN_TYPE))) {
+                            String splitter = column.getString(KeyConstant.COLUMN_SPLITTER);
+                            if(Strings.isNullOrEmpty(splitter)) {
+                                throw DataETLException.asDataETLException(MongoDBReaderErrorCode.ILLEGAL_VALUE,
+                                        MongoDBReaderErrorCode.ILLEGAL_VALUE.getDescription());
+                            } else {
+                                ArrayList array = (ArrayList)tempCol;
+                                String tempArrayStr = Joiner.on(splitter).join(array);
+                                record.addColumn(new StringColumn(tempArrayStr));
+                            }
                         } else {
-                            ArrayList array = (ArrayList) tempCol;
-                            String tempArrayStr = Joiner.on(splitter).join(array);
-                            object.put(column.getString(KeyConstant.COLUMN_NAME), tempArrayStr);
+                            record.addColumn(new StringColumn(tempCol.toString()));
                         }
-                    }else{
-                        object.put(column.getString(KeyConstant.COLUMN_NAME), tempCol.toString());
                     }
                 }
-                channel.add(object);
+                channel.add(record);
             }
         }
     }

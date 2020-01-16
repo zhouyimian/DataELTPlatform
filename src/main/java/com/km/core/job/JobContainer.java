@@ -6,12 +6,8 @@ import com.km.common.util.Configuration;
 import com.km.core.AbstractContainer;
 import com.km.core.util.FrameworkErrorCode;
 import com.km.core.util.container.CoreConstant;
-import com.km.reader.MongoDBReader;
-import com.km.reader.MysqlReader;
-import com.km.reader.Reader;
-import com.km.writer.MongoDBWriter;
-import com.km.writer.MysqlWriter;
-import com.km.writer.Writer;
+import com.km.reader.*;
+import com.km.writer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

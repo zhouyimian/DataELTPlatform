@@ -1,4 +1,4 @@
-package com.km.writer.MongoDBWriterUtil;
+package com.km.writer.mongoDBWriterUtil;
 
 
 import com.km.common.exception.ErrorCode;

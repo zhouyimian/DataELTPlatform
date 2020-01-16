@@ -2,68 +2,30 @@
   "job": {
     "setting": {
       "speed": {
-        "channel": 5
+        "channel": 1
       }
     },
     "content": {
       "reader": {
-        "name": "mongodbreader",
+        "name": "mysqlreader",
         "parameter": {
-          "address": [
-            "192.168.43.57:27017"
-          ],
-          "username": "",
-          "password": "",
-          "dbName": "recommender",
-          "collectionName": "testFrom",
+          "username": "root",
+          "password": "313976009",
           "column": [
-            {
-              "name": "title",
-              "type": "string"
-            },
-            {
-              "name": "description",
-              "type": "string"
-            },
-            {
-              "name": "url",
-              "type": "string"
-            },
-            {
-              "name": "likes",
-              "type": "Double"
+            "uid",
+            "time",
+            "username",
+            "password"
+          ],
+          "connection": {
+              "table": "user",
+              "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT"
             }
-          ]
         }
       },
       "writer": {
-        "name": "mongodbwriter",
+        "name": "streamwriter",
         "parameter": {
-          "address": [
-            "192.168.43.57:27017"
-          ],
-          "userName": "",
-          "userPassword": "",
-          "dbName": "recommender",
-          "collectionName": "testTo",
-          "column": [
-            {
-              "name": "title",
-              "type": "string"
-            },
-            {
-              "name": "description",
-              "type": "string"
-            },
-            {
-              "name": "url",
-              "type": "string"
-            },
-            {
-              "name": "likes",
-              "type": "Double"
-            }
-          ]
         }
       }
     }

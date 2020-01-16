@@ -7,6 +7,8 @@ public final class Key {
 
     public final static String PASSWORD = "password";
 
+    public final static String INSERTSQL = "insertSql";
+
     public final static String TABLE = "table";
 
     public final static String COLUMN = "column";

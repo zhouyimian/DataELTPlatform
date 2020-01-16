@@ -10,8 +10,10 @@ import java.sql.SQLException;
 
 public class testStart {
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
+
+        System.setProperty("hadoop.home.dir", "F:\\github\\winutils-master\\hadoop-2.6.0");
         String corePath = "src/main/resources/static/core.json";
-        String jobPath = "src/main/resources/static/job.json";
+        String jobPath = "src/main/resources/static/Mongodb2Mongodb.json";
 
         JSONObject corejson = JSONObject.parseObject(readFile(corePath));
         JSONObject jobjson = JSONObject.parseObject(readFile(jobPath));

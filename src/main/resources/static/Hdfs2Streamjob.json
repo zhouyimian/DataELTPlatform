@@ -1,0 +1,45 @@
+{
+  "job": {
+    "setting": {
+      "speed": {
+        "channel": 5
+      }
+    },
+    "content": {
+      "reader": {
+        "name": "hdfsreader",
+        "parameter": {
+          "path": "/test.txt",
+          "defaultFS": "hdfs://192.168.43.55:9000",
+          "column": [
+            {
+              "index": 0,
+              "type": "long"
+            },
+            {
+              "index": 1,
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "value": "hello"
+            },
+            {
+              "index": 2,
+              "type": "double"
+            }
+          ],
+          "fileType": "text",
+          "encoding": "UTF-8",
+          "fieldDelimiter": ","
+        }
+      },
+      "writer": {
+        "name": "streamwriter",
+        "parameter": {
+
+        }
+      }
+    }
+  }
+}
