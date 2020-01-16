@@ -4,6 +4,8 @@ package com.km.reader.hdfsReaderUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.km.common.element.*;
+import com.km.common.record.DefaultRecord;
 import io.airlift.compress.snappy.SnappyCodec;
 import com.alibaba.fastjson.TypeReference;
 
@@ -342,52 +344,7 @@ public class UnstructuredStorageReaderUtil {
                             inputStream);
                     reader = new BufferedReader(new InputStreamReader(
                             snappyInputStream, encoding));
-                }/* else if ("lzma".equalsIgnoreCase(compress)) {
-					CompressorInputStream compressorInputStream = new LZMACompressorInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							compressorInputStream, encoding));
-				} *//*else if ("pack200".equalsIgnoreCase(compress)) {
-					CompressorInputStream compressorInputStream = new Pack200CompressorInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							compressorInputStream, encoding));
-				} *//*else if ("xz".equalsIgnoreCase(compress)) {
-					CompressorInputStream compressorInputStream = new XZCompressorInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							compressorInputStream, encoding));
-				} else if ("ar".equalsIgnoreCase(compress)) {
-					ArArchiveInputStream arArchiveInputStream = new ArArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							arArchiveInputStream, encoding));
-				} else if ("arj".equalsIgnoreCase(compress)) {
-					ArjArchiveInputStream arjArchiveInputStream = new ArjArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							arjArchiveInputStream, encoding));
-				} else if ("cpio".equalsIgnoreCase(compress)) {
-					CpioArchiveInputStream cpioArchiveInputStream = new CpioArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							cpioArchiveInputStream, encoding));
-				} else if ("dump".equalsIgnoreCase(compress)) {
-					DumpArchiveInputStream dumpArchiveInputStream = new DumpArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							dumpArchiveInputStream, encoding));
-				} else if ("jar".equalsIgnoreCase(compress)) {
-					JarArchiveInputStream jarArchiveInputStream = new JarArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							jarArchiveInputStream, encoding));
-				} else if ("tar".equalsIgnoreCase(compress)) {
-					TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(
-							inputStream);
-					reader = new BufferedReader(new InputStreamReader(
-							tarArchiveInputStream, encoding));
-				}*/ else if ("zip".equalsIgnoreCase(compress)) {
+                }else if ("zip".equalsIgnoreCase(compress)) {
                     ZipCycleInputStream zipCycleInputStream = new ZipCycleInputStream(
                             inputStream);
                     reader = new BufferedReader(new InputStreamReader(
@@ -411,11 +368,7 @@ public class UnstructuredStorageReaderUtil {
             throw DataETLException.asDataETLException(
                     UnstructuredStorageReaderErrorCode.RUNTIME_EXCEPTION,
                     "运行时错误, 请联系我们", e);
-        }/* catch (ArchiveException e) {
-			throw DataETLException.asDataETLException(
-					UnstructuredStorageReaderErrorCode.READ_FILE_IO_ERROR,
-					String.format("压缩文件流读取错误 : [%s]", context), e);
-		} */ catch (IOException e) {
+        }catch (IOException e) {
             throw DataETLException.asDataETLException(
                     UnstructuredStorageReaderErrorCode.READ_FILE_IO_ERROR,
                     String.format("流读取错误 : [%s]", context), e);
@@ -442,13 +395,10 @@ public class UnstructuredStorageReaderUtil {
                     Constant.DEFAULT_FIELD_DELIMITER));
         }
 
-        // warn: default value ',', fieldDelimiter could be \n(lineDelimiter)
-        // for no fieldDelimiter
         fieldDelimiter = readerSliceConfig.getChar(Key.FIELD_DELIMITER,
                 Constant.DEFAULT_FIELD_DELIMITER);
         Boolean skipHeader = readerSliceConfig.getBool(Key.SKIP_HEADER,
                 Constant.DEFAULT_SKIP_HEADER);
-        // warn: no default value '\N'
 
         // warn: Configuration -> List<ColumnEntry> for performance
         // List<Configuration> column = readerSliceConfig
@@ -457,9 +407,7 @@ public class UnstructuredStorageReaderUtil {
                 .getListColumnEntry(readerSliceConfig, Key.COLUMN);
         CsvReader csvReader = null;
 
-        // every line logic
         try {
-            // TODO lineDelimiter
             if (skipHeader) {
                 String fetchLine = reader.readLine();
                 LOG.info(String.format("Header line %s has been skiped.",
@@ -498,22 +446,18 @@ public class UnstructuredStorageReaderUtil {
         }
     }
 
-    public static JSONObject transportOneRecord(Channel channel, List<ColumnEntry> columnConfigs,
-                                                String[] sourceLine) {
-        JSONObject result = new JSONObject();
-
+    public static Record transportOneRecord(Channel channel, List<ColumnEntry> columnConfigs,
+                                            String[] sourceLine) {
+        Record record = new DefaultRecord();
+        Column columnGenerated = null;
         // 创建都为String类型column的record
         try {
-            JSONArray array = new JSONArray();
             for (ColumnEntry columnConfig : columnConfigs) {
-                JSONObject column = new JSONObject();
                 String columnType = columnConfig.getType();
                 Integer columnIndex = columnConfig.getIndex();
                 String columnConst = columnConfig.getValue();
 
-
                 String columnValue = null;
-
                 if (null == columnIndex && null == columnConst) {
                     throw DataETLException
                             .asDataETLException(
@@ -545,13 +489,11 @@ public class UnstructuredStorageReaderUtil {
                 // it's all ok if nullFormat is null
                 switch (type) {
                     case STRING:
-                        column.put("rawData",columnValue);
-                        column.put("type","STRING");
+                        columnGenerated = new StringColumn(columnValue);
                         break;
                     case LONG:
                         try {
-                            column.put("rawData",Long.parseLong(columnValue));
-                            column.put("type","LONG");
+                            columnGenerated = new LongColumn(columnValue);
                         } catch (Exception e) {
                             throw new IllegalArgumentException(String.format(
                                     "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -560,8 +502,7 @@ public class UnstructuredStorageReaderUtil {
                         break;
                     case DOUBLE:
                         try {
-                            column.put("rawData",Double.parseDouble(columnValue));
-                            column.put("type","DOUBLE");
+                            columnGenerated = new DoubleColumn(columnValue);
                         } catch (Exception e) {
                             throw new IllegalArgumentException(String.format(
                                     "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -570,8 +511,7 @@ public class UnstructuredStorageReaderUtil {
                         break;
                     case BOOLEAN:
                         try {
-                            column.put("rawData",Boolean.parseBoolean(columnValue));
-                            column.put("type","BOOLEAN");
+                            columnGenerated = new BoolColumn(columnValue);
                         } catch (Exception e) {
                             throw new IllegalArgumentException(String.format(
                                     "类型转换错误, 无法将[%s] 转换为[%s]", columnValue,
@@ -581,22 +521,22 @@ public class UnstructuredStorageReaderUtil {
                         break;
                     case DATE:
                         try {
-                            column.put("type","DATE");
                             if (columnValue == null) {
-                                column.put("rawData",new Date());
+                                Date date = null;
+                                columnGenerated = new DateColumn(date);
                             } else {
                                 String formatString = columnConfig.getFormat();
-                                //if (null != formatString) {
                                 if (StringUtils.isNotBlank(formatString)) {
                                     // 用户自己配置的格式转换, 脏数据行为出现变化
                                     DateFormat format = columnConfig
                                             .getDateFormat();
-                                    column.put("rawData",new Date(String.valueOf(format.parse(columnValue))));
+                                    columnGenerated = new DateColumn(
+                                            format.parse(columnValue));
                                 } else {
                                     // 框架尝试转换
-//                                    columnGenerated = new DateColumn(
-//                                            new StringColumn(columnValue)
-//                                                    .asDate());
+                                    columnGenerated = new DateColumn(
+												new StringColumn(columnValue)
+														.asDate());
                                 }
                             }
                         } catch (Exception e) {
@@ -614,14 +554,12 @@ public class UnstructuredStorageReaderUtil {
                                         UnstructuredStorageReaderErrorCode.NOT_SUPPORT_TYPE,
                                         errorMessage);
                 }
-                array.add(column);
             }
-            result.put("data",array);
-            //channel.add(result);
+            channel.add(record);
         } catch (Exception e) {
             throw e;
         }
-        return result;
+        return record;
     }
 
     public static List<ColumnEntry> getListColumnEntry(
@@ -638,7 +576,7 @@ public class UnstructuredStorageReaderUtil {
         return result;
     }
 
-    public static JSONObject transportOneRecord(Channel channel,
+    public static Record transportOneRecord(Channel channel,
                                             Configuration configuration,
                                             String line){
         List<ColumnEntry> column = UnstructuredStorageReaderUtil
@@ -655,8 +593,6 @@ public class UnstructuredStorageReaderUtil {
             LOG.warn(String.format("您没有配置列分隔符, 使用默认值[%s]",
                     Constant.DEFAULT_FIELD_DELIMITER));
         }
-        // warn: default value ',', fieldDelimiter could be \n(lineDelimiter)
-        // for no fieldDelimiter
         Character fieldDelimiter = configuration.getChar(Key.FIELD_DELIMITER,
                 Constant.DEFAULT_FIELD_DELIMITER);
 

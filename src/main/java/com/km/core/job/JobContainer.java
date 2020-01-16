@@ -1,6 +1,8 @@
 package com.km.core.job;
 
 
+import com.alibaba.fastjson.JSONObject;
+import com.km.common.exception.CommonErrorCode;
 import com.km.common.exception.DataETLException;
 import com.km.common.util.Configuration;
 import com.km.core.AbstractContainer;
@@ -11,8 +13,15 @@ import com.km.writer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,6 +68,9 @@ public class JobContainer extends AbstractContainer {
             LOG.info("jobContainer starts to do schedule ...");
             this.schedule();
             LOG.debug("jobContainer starts to do post ...");
+            this.post();
+
+            this.destory();
 
         } catch (Throwable e) {
             LOG.error("Exception when job run", e);
@@ -71,18 +83,76 @@ public class JobContainer extends AbstractContainer {
         }
     }
 
+
+
     /**
      * reader和writer的初始化
      */
-    public void init(){
+    public void init() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
         this.readerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
         this.writerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME);
 
-        //这里得根据plugname获取到类的路径进行初始化，这里只是简单创建下
-        this.jobReader = new MongoDBReader.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER));
-        this.jobWriter = new MongoDBWriter.Job(configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER));
+        String readerConfigPath = "src/main/resources/static/config/readerConfiguration.json";
+        String writerConfigPath = "src/main/resources/static/config/writerConfiguration.json";
+        Configuration readerConfig = Configuration.from(readFile(readerConfigPath));
+        Configuration writerConfig = Configuration.from(readFile(writerConfigPath));
+
+        List<JSONObject> readerPlugins = readerConfig.getList("reader",JSONObject.class);
+        List<JSONObject> writerPlugins = writerConfig.getList("writer",JSONObject.class);
+
+        String readerPluginClass = null;
+        String writerPluginClass = null;
+
+        for(JSONObject readerPluginConfig:readerPlugins){
+            if(readerPluginConfig.getString("name").equals(this.readerPluginName)){
+                readerPluginClass = readerPluginConfig.getString("classPath");
+                break;
+            }
+        }
+        if(readerPluginClass==null){
+            throw DataETLException.asDataETLException(CommonErrorCode.CONFIG_ERROR,
+                    "配置的reader[ "+ this.readerPluginName +"]不存在，请重新输入reader");
+        }
+        for(JSONObject writerPluginConfig:writerPlugins){
+            if(writerPluginConfig.getString("name").equals(this.writerPluginName)){
+                writerPluginClass = writerPluginConfig.getString("classPath");
+                break;
+            }
+        }
+        if(writerPluginClass==null){
+            throw DataETLException.asDataETLException(CommonErrorCode.CONFIG_ERROR,
+                    "配置的writer[ "+ this.writerPluginName +"]不存在，请重新输入writer");
+        }
+        configuration.set("test","test");
+        Configuration readerParamter = configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER);
+        Configuration writerParamter = configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER);
+        readerParamter.set("readerClassPath",readerPluginClass);
+        writerParamter.set("writerClassPath",writerPluginClass);
+
+
+        this.jobReader = (Reader.Job) createJob(readerPluginClass,readerParamter);
+        this.jobWriter = (Writer.Job) createJob(writerPluginClass,writerParamter);
     }
+
+
+
+    private Object createJob(String className, Configuration configuration) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Class clazz = Class.forName(className);
+        Class innerClazz[] = clazz.getDeclaredClasses();
+        Constructor constructor = null;
+        for(Class cls : innerClazz){
+            if(cls.getName().contains("Job")){
+               constructor = cls.getConstructor(Configuration.class);
+            }
+        }
+        if(constructor==null){
+            throw DataETLException.asDataETLException
+                    (CommonErrorCode.RUNTIME_ERROR,"您实现的reader或者writer插件缺少实现Job内部类");
+        }
+        return constructor.newInstance(configuration);
+    }
+
     private int split() {
         this.needChannelNumber = this.configuration.getInt(CoreConstant.DATAX_JOB_SETTING_SPEED_CHANNEL);
         //该方法通过读取配置文件，以及channel的数量，进行任务的切分，生成对应的configuration，
@@ -107,7 +177,7 @@ public class JobContainer extends AbstractContainer {
         return contentConfig.size();
     }
 
-    public void schedule(){
+    public void schedule() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, InterruptedException {
         int taskNumber = this.configuration.getList(
                 CoreConstant.DATAX_JOB_CONTENT).size();
 
@@ -117,14 +187,17 @@ public class JobContainer extends AbstractContainer {
 
     }
 
-    private void startAllTask(List<Configuration> configurations) {
+    private void startAllTask(List<Configuration> configurations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(configurations.size());
         this.taskExecutorService = Executors
                 .newFixedThreadPool(configurations.size());
 
         for(Configuration conf:configurations){
-            TaskRunner runner = new TaskRunner(conf);
+            TaskRunner runner = new TaskRunner(conf,countDownLatch);
             taskExecutorService.execute(runner);
         }
+
+        countDownLatch.await();
         this.taskExecutorService.shutdown();
     }
 
@@ -182,5 +255,50 @@ public class JobContainer extends AbstractContainer {
         }
 
         return contentConfigs;
+    }
+
+    private static String readFile(String filePath) {
+        // 读取txt内容为字符串
+        StringBuffer txtContent = new StringBuffer();
+        // 每次读取的byte数
+        byte[] b = new byte[8 * 1024];
+        InputStream in = null;
+        try {
+            // 文件输入流
+            in = new FileInputStream(filePath);
+            while (in.read(b) != -1) {
+                // 字符串拼接
+                txtContent.append(new String(b));
+            }
+            // 关闭流
+            in.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return txtContent.toString();
+    }
+
+
+    @Override
+    public void post() {
+        this.jobReader.post();
+        this.jobWriter.post();
+    }
+
+    @Override
+    public void destory() {
+        this.jobReader.destroy();
+        this.jobWriter.destroy();
     }
 }

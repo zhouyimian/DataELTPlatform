@@ -1,0 +1,20 @@
+{
+  "writer":[
+    {
+      "name":"streamwriter",
+      "classPath":"com.km.writer.StreamWriter"
+    },
+    {
+      "name":"hdfswriter",
+      "classPath":"com.km.writer.HdfsWriter"
+    },
+    {
+      "name":"mongodbwriter",
+      "classPath":"com.km.writer.MongoDBWriter"
+    },
+    {
+      "name":"mysqlwriter",
+      "classPath":"com.km.writer.MysqlWriter"
+    }
+  ]
+}

@@ -26,6 +26,27 @@ public class MysqlReader extends Reader {
         }
 
         @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+
+        @Override
         public List<Configuration> split(int adviceNumber) {
             //改变量用于设置是否为自定义sql
             boolean isTableMode = true;
@@ -124,6 +145,27 @@ public class MysqlReader extends Reader {
             }
 
         }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
 
         private Record buildOneRecord(ResultSet rs, ResultSetMetaData metaData, int columnNumber) throws SQLException {
             Record record = new DefaultRecord();

@@ -1,7 +1,9 @@
 package com.km.writer;
 
 import com.alibaba.fastjson.JSONObject;
+import com.km.common.element.Column;
 import com.km.common.element.Record;
+import com.km.common.element.StringColumn;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
 import com.km.reader.mysqlReaderUtil.DBUtil;
@@ -28,6 +30,27 @@ public class MysqlWriter extends Writer {
             super(configuration);
             this.configuration = this.getConfiguration();
         }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
 
         @Override
         public List<Configuration> split(int adviceNumber) {
@@ -80,6 +103,26 @@ public class MysqlWriter extends Writer {
                         pstmt, record,this.columns.size(),resultSetMetaData);
                 pstmt.execute();
             }
+        }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
         }
     }
 

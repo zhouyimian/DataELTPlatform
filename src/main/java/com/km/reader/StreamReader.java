@@ -49,6 +49,27 @@ public class StreamReader extends Reader {
             }
         }
 
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+
         private void dealColumn(Configuration originalConfig) {
             List<JSONObject> columns = originalConfig.getList(Key.COLUMN,
                     JSONObject.class);
@@ -206,6 +227,27 @@ public class StreamReader extends Reader {
                 this.sliceRecordCount--;
             }
         }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
 
         private Column buildOneColumn(Configuration eachColumnConfig) throws Exception {
             String columnValue = eachColumnConfig

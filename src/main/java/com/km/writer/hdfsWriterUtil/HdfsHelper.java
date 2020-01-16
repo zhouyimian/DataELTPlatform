@@ -4,6 +4,8 @@ package com.km.writer.hdfsWriterUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.km.common.element.Column;
+import com.km.common.element.Record;
 import com.km.common.exception.DataETLException;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
@@ -28,7 +30,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public  class HdfsHelper {
+public class HdfsHelper {
     public static final Logger LOG = LoggerFactory.getLogger(HdfsWriter.Job.class);
     public FileSystem fileSystem = null;
     public JobConf conf = null;
@@ -37,7 +39,7 @@ public  class HdfsHelper {
     public static final String HDFS_DEFAULTFS_KEY = "fs.defaultFS";
 
 
-    public void getFileSystem(String defaultFS, Configuration taskConfig){
+    public void getFileSystem(String defaultFS, Configuration taskConfig) {
         hadoopConf = new org.apache.hadoop.conf.Configuration();
 
         Configuration hadoopSiteParams = taskConfig.getConfiguration(Key.HADOOP_CONFIG);
@@ -58,14 +60,14 @@ public  class HdfsHelper {
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             String message = String.format("获取FileSystem失败,请检查HDFS地址是否正确: [%s]",
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
 
-        if(null == fileSystem || null == conf){
+        if (null == fileSystem || null == conf) {
             String message = String.format("获取FileSystem失败,请检查HDFS地址是否正确: [%s]",
                     "message:defaultFS =" + defaultFS);
             LOG.error(message);
@@ -74,19 +76,19 @@ public  class HdfsHelper {
     }
 
     /**
-     *获取指定目录先的文件列表
+     * 获取指定目录先的文件列表
+     *
      * @param dir
-     * @return
-     * 拿到的是文件全路径，
+     * @return 拿到的是文件全路径，
      * eg：hdfs://10.101.204.12:9000/user/hive/warehouse/writer.db/text/test.textfile
      */
-    public String[] hdfsDirList(String dir){
+    public String[] hdfsDirList(String dir) {
         Path path = new Path(dir);
         String[] files = null;
         try {
             FileStatus[] status = fileSystem.listStatus(path);
             files = new String[status.length];
-            for(int i=0;i<status.length;i++){
+            for (int i = 0; i < status.length; i++) {
                 files[i] = status[i].getPath().toString();
             }
         } catch (IOException e) {
@@ -99,24 +101,25 @@ public  class HdfsHelper {
 
     /**
      * 获取以fileName__ 开头的文件列表
+     *
      * @param dir
      * @param fileName
      * @return
      */
-    public Path[] hdfsDirList(String dir, String fileName){
+    public Path[] hdfsDirList(String dir, String fileName) {
         Path path = new Path(dir);
         Path[] files = null;
         String filterFileName = fileName + "__*";
         try {
             PathFilter pathFilter = new GlobFilter(filterFileName);
-            FileStatus[] status = fileSystem.listStatus(path,pathFilter);
+            FileStatus[] status = fileSystem.listStatus(path, pathFilter);
             files = new Path[status.length];
-            for(int i=0;i<status.length;i++){
+            for (int i = 0; i < status.length; i++) {
                 files[i] = status[i].getPath();
             }
         } catch (IOException e) {
             String message = String.format("获取目录[%s]下文件名以[%s]开头的文件列表时发生网络IO异常,请检查您的网络是否正常！",
-                    dir,fileName);
+                    dir, fileName);
             LOG.error(message);
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
@@ -150,11 +153,11 @@ public  class HdfsHelper {
         return isDir;
     }
 
-    public void deleteFiles(Path[] paths){
-        for(int i=0;i<paths.length;i++){
+    public void deleteFiles(Path[] paths) {
+        for (int i = 0; i < paths.length; i++) {
             LOG.info(String.format("delete file [%s].", paths[i].toString()));
             try {
-                fileSystem.delete(paths[i],true);
+                fileSystem.delete(paths[i], true);
             } catch (IOException e) {
                 String message = String.format("删除文件[%s]时发生IO异常,请检查您的网络是否正常！",
                         paths[i].toString());
@@ -164,63 +167,52 @@ public  class HdfsHelper {
         }
     }
 
-    public void deleteDir(Path path){
-        LOG.info(String.format("start delete tmp dir [%s] .",path.toString()));
+    public void deleteDir(Path path) {
+        LOG.info(String.format("start delete tmp dir [%s] .", path.toString()));
         try {
-            if(isPathexists(path.toString())) {
-                fileSystem.delete(path, true);
+            if (isPathexists(path.toString())) {
+                //fileSystem.delete(path, true);
             }
         } catch (Exception e) {
             String message = String.format("删除临时目录[%s]时发生IO异常,请检查您的网络是否正常！", path.toString());
             LOG.error(message);
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
         }
-        LOG.info(String.format("finish delete tmp dir [%s] .",path.toString()));
+        LOG.info(String.format("finish delete tmp dir [%s] .", path.toString()));
     }
 
-    public void renameFile(HashSet<String> tmpFiles, HashSet<String> endFiles){
+    public void renameFile(HashSet<String> tmpFiles, HashSet<String> endFiles) {
         Path tmpFilesParent = null;
-        if(tmpFiles.size() != endFiles.size()){
+        if (tmpFiles.size() != endFiles.size()) {
             String message = String.format("临时目录下文件名个数与目标文件名个数不一致!");
             LOG.error(message);
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.HDFS_RENAME_FILE_ERROR, message);
-        }else{
-            try{
-                for (Iterator it1=tmpFiles.iterator(),it2=endFiles.iterator();it1.hasNext()&&it2.hasNext();){
+        } else {
+            try {
+                for (Iterator it1 = tmpFiles.iterator(), it2 = endFiles.iterator(); it1.hasNext() && it2.hasNext(); ) {
+                    boolean renameTag = false;
                     String srcFile = it1.next().toString();
                     String dstFile = it2.next().toString();
+
                     Path srcFilePah = new Path(srcFile);
                     Path dstFilePah = new Path(dstFile);
-                    if(tmpFilesParent == null){
-                        tmpFilesParent = srcFilePah.getParent();
-                    }
-                    LOG.info(String.format("start rename file [%s] to file [%s].", srcFile,dstFile));
-                    boolean renameTag = false;
-                    long fileLen = fileSystem.getFileStatus(srcFilePah).getLen();
-                    if(fileLen>0){
-                        renameTag = fileSystem.rename(srcFilePah,dstFilePah);
-                        if(!renameTag){
-                            String message = String.format("重命名文件[%s]失败,请检查您的网络是否正常！", srcFile);
-                            LOG.error(message);
-                            throw DataETLException.asDataETLException(HdfsWriterErrorCode.HDFS_RENAME_FILE_ERROR, message);
-                        }
-                        LOG.info(String.format("finish rename file [%s] to file [%s].", srcFile,dstFile));
-                    }else{
-                        LOG.info(String.format("文件［%s］内容为空,请检查写入是否正常！", srcFile));
+                    renameTag = fileSystem.rename(srcFilePah, dstFilePah);
+                    if (!renameTag) {
+                        String message = String.format("重命名文件[%s]失败,请检查您的网络是否正常！", srcFile);
+                        LOG.error(message);
+                        throw DataETLException.asDataETLException(HdfsWriterErrorCode.HDFS_RENAME_FILE_ERROR, message);
                     }
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 String message = String.format("重命名文件时发生异常,请检查您的网络是否正常！");
                 LOG.error(message);
                 throw DataETLException.asDataETLException(HdfsWriterErrorCode.CONNECT_HDFS_IO_ERROR, e);
-            }finally {
-                deleteDir(tmpFilesParent);
             }
         }
     }
 
     //关闭FileSystem
-    public void closeFileSystem(){
+    public void closeFileSystem() {
         try {
             fileSystem.close();
         } catch (IOException e) {
@@ -232,7 +224,7 @@ public  class HdfsHelper {
 
 
     //textfile格式文件
-    public FSDataOutputStream getOutputStream(String path){
+    public FSDataOutputStream getOutputStream(String path) {
         Path storePath = new Path(path);
         FSDataOutputStream fSDataOutputStream = null;
         try {
@@ -249,72 +241,124 @@ public  class HdfsHelper {
     /**
      * 写textfile类型文件
      */
-    public void textFileStartWrite(Channel channel, Configuration config, String fileName){
+    public void textFileStartWrite(Channel channel, Configuration config, String fileName) {
         char fieldDelimiter = config.getChar(Key.FIELD_DELIMITER);
-        List<Configuration>  columns = config.getListConfiguration(Key.COLUMN);
-        String compress = config.getString(Key.COMPRESS,null);
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
+        String compress = config.getString(Key.COMPRESS, null);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-        String attempt = "attempt_"+dateFormat.format(new Date())+"_0001_m_000000_0";
+        String attempt = "attempt_" + dateFormat.format(new Date()) + "_0001_m_000000_0";
         Path outputPath = new Path(fileName);
 
         conf.set(JobContext.TASK_ATTEMPT_ID, attempt);
         FileOutputFormat outFormat = new TextOutputFormat();
         outFormat.setOutputPath(conf, outputPath);
         outFormat.setWorkOutputPath(conf, outputPath);
-        if(null != compress) {
+        if (null != compress) {
             Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
             if (null != codecClass) {
                 outFormat.setOutputCompressorClass(conf, codecClass);
             }
         }
         try {
-//            RecordWriter writer = outFormat.getRecordWriter(fileSystem, conf, outputPath.toString(), Reporter.NULL);
-//            JSONObject object;
-//            while ((object = channel.remove()) != null) {
-//                MutablePair<Text, Boolean> transportResult = transportOneRecord(object, fieldDelimiter, columns);
-//                if (!transportResult.getRight()) {
-//                    writer.write(NullWritable.get(),transportResult.getLeft());
-//                }
-//            }
-//            writer.close(Reporter.NULL);
+            RecordWriter writer = outFormat.getRecordWriter(fileSystem, conf, outputPath.toString(), Reporter.NULL);
+            Record record;
+            while ((record = channel.remove()) != null) {
+                Text transportResult = transportOneRecord(record, fieldDelimiter, columns);
+                writer.write(NullWritable.get(), transportResult);
+
+            }
+            writer.close(Reporter.NULL);
         } catch (Exception e) {
             String message = String.format("写文件文件[%s]时发生IO异常,请检查您的网络是否正常！", fileName);
-            LOG.error(message);
-            Path path = new Path(fileName);
-            deleteDir(path.getParent());
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.Write_FILE_IO_ERROR, e);
         }
     }
 
-    public static MutablePair<Text, Boolean> transportOneRecord(
-            JSONObject object, char fieldDelimiter, List<Configuration> columnsConfiguration) {
-        MutablePair<List<Object>, Boolean> transportResultList =  transportOneRecord(object,columnsConfiguration);
-        //保存<转换后的数据,是否是脏数据>
-        MutablePair<Text, Boolean> transportResult = new MutablePair<Text, Boolean>();
-        transportResult.setRight(false);
-        if(null != transportResultList){
-            Text recordResult = new Text(StringUtils.join(transportResultList.getLeft(), fieldDelimiter));
-            transportResult.setRight(transportResultList.getRight());
-            transportResult.setLeft(recordResult);
+    public static Text transportOneRecord(
+            Record record, char fieldDelimiter, List<Configuration> columnsConfiguration) {
+        List<Object> recordList = Lists.newArrayList();
+        int recordLength = record.getColumnNumber();
+        if (0 != recordLength) {
+            Column column;
+            for (int i = 0; i < recordLength; i++) {
+                column = record.getColumn(i);
+                //todo as method
+                if (null != column.getRawData()) {
+                    String rowData = column.getRawData().toString();
+                    SupportHiveDataType columnType = SupportHiveDataType.valueOf(
+                            columnsConfiguration.get(i).getString(Key.TYPE).toUpperCase());
+                    //根据writer端类型配置做类型转换
+                    try {
+                        switch (columnType) {
+                            case TINYINT:
+                                recordList.add(Byte.valueOf(rowData));
+                                break;
+                            case SMALLINT:
+                                recordList.add(Short.valueOf(rowData));
+                                break;
+                            case INT:
+                                recordList.add(Integer.valueOf(rowData));
+                                break;
+                            case BIGINT:
+                                recordList.add(column.asLong());
+                                break;
+                            case FLOAT:
+                                recordList.add(Float.valueOf(rowData));
+                                break;
+                            case DOUBLE:
+                                recordList.add(column.asDouble());
+                                break;
+                            case STRING:
+                            case VARCHAR:
+                            case CHAR:
+                                recordList.add(column.asString());
+                                break;
+                            case BOOLEAN:
+                                recordList.add(column.asBoolean());
+                                break;
+                            case DATE:
+                                recordList.add(new java.sql.Date(column.asDate().getTime()));
+                                break;
+                            case TIMESTAMP:
+                                recordList.add(new java.sql.Timestamp(column.asDate().getTime()));
+                                break;
+                            default:
+                                throw DataETLException
+                                        .asDataETLException(
+                                                HdfsWriterErrorCode.ILLEGAL_VALUE,
+                                                String.format(
+                                                        "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库写入这种字段类型. 字段名:[%s], 字段类型:[%d]. 请修改表中该字段的类型或者不同步该字段.",
+                                                        columnsConfiguration.get(i).getString(Key.NAME),
+                                                        columnsConfiguration.get(i).getString(Key.TYPE)));
+                        }
+                    } catch (Exception e) {
+                        break;
+                    }
+                } else {
+                    // warn: it's all ok if nullFormat is null
+                    recordList.add(null);
+                }
+            }
         }
-        return transportResult;
+
+        return new Text(StringUtils.join(recordList,fieldDelimiter));
     }
 
-    public Class<? extends CompressionCodec>  getCompressCodec(String compress){
+    public Class<? extends CompressionCodec> getCompressCodec(String compress) {
         Class<? extends CompressionCodec> codecClass = null;
-        if(null == compress){
+        if (null == compress) {
             codecClass = null;
-        }else if("GZIP".equalsIgnoreCase(compress)){
+        } else if ("GZIP".equalsIgnoreCase(compress)) {
             codecClass = org.apache.hadoop.io.compress.GzipCodec.class;
-        }else if ("BZIP2".equalsIgnoreCase(compress)) {
+        } else if ("BZIP2".equalsIgnoreCase(compress)) {
             codecClass = org.apache.hadoop.io.compress.BZip2Codec.class;
-        }else if("SNAPPY".equalsIgnoreCase(compress)){
+        } else if ("SNAPPY".equalsIgnoreCase(compress)) {
             //todo 等需求明确后支持 需要用户安装SnappyCodec
             codecClass = org.apache.hadoop.io.compress.SnappyCodec.class;
             // org.apache.hadoop.hive.ql.io.orc.ZlibCodec.class  not public
             //codecClass = org.apache.hadoop.hive.ql.io.orc.ZlibCodec.class;
-        }else {
+        } else {
             throw DataETLException.asDataETLException(HdfsWriterErrorCode.ILLEGAL_VALUE,
                     String.format("目前不支持您配置的 compress 模式 : [%s]", compress));
         }
@@ -324,8 +368,8 @@ public  class HdfsHelper {
     /**
      * 写orcfile类型文件
      */
-    public void orcFileStartWrite(Channel channel, Configuration config, String fileName){
-        List<Configuration>  columns = config.getListConfiguration(Key.COLUMN);
+    public void orcFileStartWrite(Channel channel, Configuration config, String fileName) {
+        List<Configuration> columns = config.getListConfiguration(Key.COLUMN);
         String compress = config.getString(Key.COMPRESS, null);
         List<String> columnNames = getColumnNames(columns);
         List<ObjectInspector> columnTypeInspectors = getColumnTypeInspectors(columns);
@@ -335,7 +379,7 @@ public  class HdfsHelper {
         OrcSerde orcSerde = new OrcSerde();
 
         FileOutputFormat outFormat = new OrcOutputFormat();
-        if(!"NONE".equalsIgnoreCase(compress) && null != compress ) {
+        if (!"NONE".equalsIgnoreCase(compress) && null != compress) {
             Class<? extends CompressionCodec> codecClass = getCompressCodec(compress);
             if (null != codecClass) {
                 outFormat.setOutputCompressorClass(conf, codecClass);
@@ -360,7 +404,7 @@ public  class HdfsHelper {
         }
     }
 
-    public List<String> getColumnNames(List<Configuration> columns){
+    public List<String> getColumnNames(List<Configuration> columns) {
         List<String> columnNames = Lists.newArrayList();
         for (Configuration eachColumnConf : columns) {
             columnNames.add(eachColumnConf.getString(Key.NAME));
@@ -370,11 +414,12 @@ public  class HdfsHelper {
 
     /**
      * 根据writer配置的字段类型，构建inspector
+     *
      * @param columns
      * @return
      */
-    public List<ObjectInspector>  getColumnTypeInspectors(List<Configuration> columns){
-        List<ObjectInspector>  columnTypeInspectors = Lists.newArrayList();
+    public List<ObjectInspector> getColumnTypeInspectors(List<Configuration> columns) {
+        List<ObjectInspector> columnTypeInspectors = Lists.newArrayList();
         for (Configuration eachColumnConf : columns) {
             SupportHiveDataType columnType = SupportHiveDataType.valueOf(eachColumnConf.getString(Key.TYPE).toUpperCase());
             ObjectInspector objectInspector = null;
@@ -426,7 +471,7 @@ public  class HdfsHelper {
         return columnTypeInspectors;
     }
 
-    public OrcSerde getOrcSerde(Configuration config){
+    public OrcSerde getOrcSerde(Configuration config) {
         String fieldDelimiter = config.getString(Key.FIELD_DELIMITER);
         String compress = config.getString(Key.COMPRESS);
         String encoding = config.getString(Key.ENCODING);
@@ -439,83 +484,5 @@ public  class HdfsHelper {
 
         orcSerde.initialize(conf, properties);
         return orcSerde;
-    }
-
-    public static MutablePair<List<Object>, Boolean> transportOneRecord(
-            JSONObject object,List<Configuration> columnsConfiguration){
-        MutablePair<List<Object>, Boolean> transportResult = new MutablePair<List<Object>, Boolean>();
-        transportResult.setRight(false);
-        List<Object> recordList = Lists.newArrayList();
-//        int recordLength = record.getColumnNumber();
-//        if (0 != recordLength) {
-//            Column column;
-//            for (int i = 0; i < recordLength; i++) {
-//                column = record.getColumn(i);
-//                //todo as method
-//                if (null != column.getRawData()) {
-//                    String rowData = column.getRawData().toString();
-//                    SupportHiveDataType columnType = SupportHiveDataType.valueOf(
-//                            columnsConfiguration.get(i).getString(Key.TYPE).toUpperCase());
-//                    //根据writer端类型配置做类型转换
-//                    try {
-//                        switch (columnType) {
-//                            case TINYINT:
-//                                recordList.add(Byte.valueOf(rowData));
-//                                break;
-//                            case SMALLINT:
-//                                recordList.add(Short.valueOf(rowData));
-//                                break;
-//                            case INT:
-//                                recordList.add(Integer.valueOf(rowData));
-//                                break;
-//                            case BIGINT:
-//                                recordList.add(column.asLong());
-//                                break;
-//                            case FLOAT:
-//                                recordList.add(Float.valueOf(rowData));
-//                                break;
-//                            case DOUBLE:
-//                                recordList.add(column.asDouble());
-//                                break;
-//                            case STRING:
-//                            case VARCHAR:
-//                            case CHAR:
-//                                recordList.add(column.asString());
-//                                break;
-//                            case BOOLEAN:
-//                                recordList.add(column.asBoolean());
-//                                break;
-//                            case DATE:
-//                                recordList.add(new java.sql.Date(column.asDate().getTime()));
-//                                break;
-//                            case TIMESTAMP:
-//                                recordList.add(new java.sql.Timestamp(column.asDate().getTime()));
-//                                break;
-//                            default:
-//                                throw DataETLException
-//                                        .asDataETLException(
-//                                                HdfsWriterErrorCode.ILLEGAL_VALUE,
-//                                                String.format(
-//                                                        "您的配置文件中的列配置信息有误. 因为DataX 不支持数据库写入这种字段类型. 字段名:[%s], 字段类型:[%d]. 请修改表中该字段的类型或者不同步该字段.",
-//                                                        columnsConfiguration.get(i).getString(Key.NAME),
-//                                                        columnsConfiguration.get(i).getString(Key.TYPE)));
-//                        }
-//                    } catch (Exception e) {
-//                        // warn: 此处认为脏数据
-//                        String message = String.format(
-//                                "字段类型转换错误：你目标字段为[%s]类型，实际字段值为[%s].",
-//                                columnsConfiguration.get(i).getString(Key.TYPE), column.getRawData().toString());
-//
-//                        transportResult.setRight(true);
-//                        break;
-//                    }
-//                }else {
-//                    // warn: it's all ok if nullFormat is null
-//                    recordList.add(null);
-//                }
-//            }
-//        }
-//        transportResult.setLeft(recordList);
-        return transportResult;
     }
 }

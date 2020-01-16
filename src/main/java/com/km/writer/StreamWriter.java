@@ -2,7 +2,6 @@
 package com.km.writer;
 
 
-import com.alibaba.fastjson.JSONObject;
 import com.km.common.element.Record;
 import com.km.common.util.Configuration;
 import com.km.core.transport.channel.Channel;
@@ -25,6 +24,26 @@ public class StreamWriter extends Writer {
         public Job(Configuration configuration) {
             super(configuration);
             this.originalConfig = super.getConfiguration();
+        }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
         }
 
 
@@ -58,5 +77,26 @@ public class StreamWriter extends Writer {
                 }
             }
         }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
     }
 }

@@ -686,8 +686,6 @@ public class DFSUtil {
         LOG.info(String.format("Start Read rcfile [%s].", sourceRcFilePath));
         List<ColumnEntry> column = UnstructuredStorageReaderUtil
                 .getListColumnEntry(readerSliceConfig, Key.COLUMN);
-        // warn: no default value '\N'
-        String nullFormat = readerSliceConfig.getString(Key.NULL_FORMAT);
 
         Path rcFilePath = new Path(sourceRcFilePath);
         FileSystem fs = null;

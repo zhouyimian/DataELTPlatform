@@ -29,6 +29,14 @@ public abstract class Writer {
         public Configuration getConfiguration() {
             return configuration;
         }
+
+        public abstract void init();
+
+        public abstract void prepare();
+
+        public abstract void post();
+
+        public abstract void destroy();
     }
 
 	/**
@@ -47,6 +55,14 @@ public abstract class Writer {
         }
 
         public abstract void startWrite(Channel channel) throws SQLException;
+
+        public abstract void init();
+
+        public abstract void prepare();
+
+        public abstract void post();
+
+        public abstract void destroy();
 
 	}
 }

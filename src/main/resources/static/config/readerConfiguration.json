@@ -1,0 +1,20 @@
+{
+  "reader":[
+    {
+      "name":"streamreader",
+      "classPath":"com.km.reader.StreamReader"
+    },
+    {
+      "name":"hdfsreader",
+      "classPath":"com.km.reader.HdfsReader"
+    },
+    {
+      "name":"mongodbreader",
+      "classPath":"com.km.reader.MongoDBReader"
+    },
+    {
+      "name":"mysqlreader",
+      "classPath":"com.km.reader.MysqlReader"
+    }
+  ]
+}

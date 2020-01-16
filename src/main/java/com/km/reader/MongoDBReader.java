@@ -49,6 +49,27 @@ public class MongoDBReader extends Reader {
         }
 
         @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+
+        @Override
         public List<Configuration> split(int adviceNumber) {
             return CollectionSplitUtil.doSplit(originalConfig, adviceNumber, mongoClient);
         }
@@ -180,6 +201,26 @@ public class MongoDBReader extends Reader {
                 }
                 channel.add(record);
             }
+        }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
         }
     }
 }

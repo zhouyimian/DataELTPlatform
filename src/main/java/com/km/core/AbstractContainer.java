@@ -23,4 +23,7 @@ public abstract class AbstractContainer {
 
     public abstract void start();
 
+    public abstract void post();
+
+    public abstract void destory();
 }

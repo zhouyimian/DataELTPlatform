@@ -13,7 +13,7 @@ public class testStart {
 
         System.setProperty("hadoop.home.dir", "F:\\github\\winutils-master\\hadoop-2.6.0");
         String corePath = "src/main/resources/static/core.json";
-        String jobPath = "src/main/resources/static/Mongodb2Mongodb.json";
+        String jobPath = "src/main/resources/static/job/job.json";
 
         JSONObject corejson = JSONObject.parseObject(readFile(corePath));
         JSONObject jobjson = JSONObject.parseObject(readFile(jobPath));
@@ -33,40 +33,24 @@ public class testStart {
         // 每次读取的byte数
         byte[] b = new byte[8 * 1024];
         InputStream in = null;
-        try
-        {
+        try {
             // 文件输入流
             in = new FileInputStream(filePath);
-
-            while (in.read(b) != -1)
-            {
+            while (in.read(b) != -1) {
                 // 字符串拼接
                 txtContent.append(new String(b));
-
             }
             // 关闭流
             in.close();
-        }
-        catch (FileNotFoundException e)
-        {
-            // TODO Auto-generated catch block
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        finally
-        {
-            if (in != null)
-            {
-                try
-                {
+        finally {
+            if (in != null) {
+                try {
                     in.close();
                 }
-                catch (IOException e)
-                {
+                catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }

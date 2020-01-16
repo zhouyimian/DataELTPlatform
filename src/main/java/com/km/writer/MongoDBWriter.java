@@ -34,6 +34,27 @@ public class MongoDBWriter extends Writer {
         }
 
         @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+
+        @Override
         public List<Configuration> split(int mandatoryNumber) {
             List<Configuration> configList = new ArrayList<Configuration>();
             for (int i = 0; i < mandatoryNumber; i++) {
@@ -96,6 +117,26 @@ public class MongoDBWriter extends Writer {
                 doBatchInsert(col, writerBuffer, mongodbColumnMeta);
                 writerBuffer.clear();
             }
+        }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
         }
 
         private void doBatchInsert(MongoCollection<BasicDBObject> collection, List<Record> writerBuffer, JSONArray columnMeta) {

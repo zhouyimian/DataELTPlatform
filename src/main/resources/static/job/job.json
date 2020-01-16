@@ -24,8 +24,32 @@
         }
       },
       "writer": {
-        "name": "streamwriter",
+        "name": "hdfswriter",
         "parameter": {
+          "defaultFS": "hdfs://192.168.43.55:9000",
+          "fileType": "text",
+          "path": "/tmp",
+          "fileName": "asd",
+          "column": [
+            {
+              "name": "uid",
+              "type": "INT"
+            },
+            {
+              "name": "time",
+              "type": "DATE"
+            },
+            {
+              "name": "username",
+              "type": "STRING"
+            },
+            {
+              "name": "password",
+              "type": "STRING"
+            }
+          ],
+          "fieldDelimiter": "\t",
+          "compress":"gzip"
         }
       }
     }

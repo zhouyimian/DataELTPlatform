@@ -33,6 +33,26 @@ public class HdfsReader extends Reader {
             this.sourceFiles = dfsUtil.getAllFiles(path, specifiedFileType);
         }
 
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+
         public void validate() {
             this.readerOriginConfig.getNecessaryValue(Key.DEFAULT_FS,
                     HdfsReaderErrorCode.DEFAULT_FS_NOT_FIND_ERROR);
@@ -219,5 +239,26 @@ public class HdfsReader extends Reader {
                 }
             }
         }
+
+        @Override
+        public void init() {
+
+        }
+
+        @Override
+        public void prepare() {
+
+        }
+
+        @Override
+        public void post() {
+
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
     }
 }
