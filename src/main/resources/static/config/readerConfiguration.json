@@ -2,19 +2,19 @@
   "reader":[
     {
       "name":"streamreader",
-      "classPath":"com.km.reader.StreamReader"
+      "classPath":"com.km.data.reader.StreamReader"
     },
     {
       "name":"hdfsreader",
-      "classPath":"com.km.reader.HdfsReader"
+      "classPath":"com.km.data.reader.HdfsReader"
     },
     {
       "name":"mongodbreader",
-      "classPath":"com.km.reader.MongoDBReader"
+      "classPath":"com.km.data.reader.MongoDBReader"
     },
     {
       "name":"mysqlreader",
-      "classPath":"com.km.reader.MysqlReader"
+      "classPath":"com.km.data.reader.MysqlReader"
     }
   ]
 }

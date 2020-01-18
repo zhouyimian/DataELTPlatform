@@ -39,7 +39,33 @@
               "table": "test"
             }
         }
-      }
+      },
+      "ETL":[
+        {
+          "pluginName":"filterNullValuePlugin",
+          "pluginClassPath":"com.km.data.plugin.filterNullValuePlugin",
+          "parameter":[
+            {
+              "name":"path",
+              "fieldName":"fieldName",
+              "necessary":true,
+              "value":"time"
+            }
+          ]
+        },
+        {
+          "pluginName":"filterNullValuePlugin",
+          "pluginClassPath":"com.km.data.plugin.filterNullValuePlugin",
+          "parameter":[
+            {
+              "name":"path",
+              "fieldName":"fieldName",
+              "necessary":true,
+              "value":"password"
+            }
+          ]
+        }
+      ]
     }
   }
 }
