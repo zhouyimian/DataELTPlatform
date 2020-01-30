@@ -15,4 +15,7 @@ public interface UserMapper {
 
     @Insert({"insert into user values(#{Userid},#{Username},#{Password}) "})
     public void register(@Param("Userid") String userid,@Param("Username") String username, @Param("Password") String password);
+
+    @Select({"select * from user where Username = #{Username}"})
+    User findUserByUserName(@Param("Username") String username);
 }

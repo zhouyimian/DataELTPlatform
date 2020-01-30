@@ -51,7 +51,8 @@ public class TaskRunner implements Runnable {
     public void run() {
         try {
             this.reader.startRead(this.channel);
-            ETL.process(this.channel,this.configuration.getConfiguration("ETL"));
+            if(this.configuration.getConfiguration("ETL")!=null)
+                ETL.process(this.channel,this.configuration.getConfiguration("ETL"));
             this.writer.startWrite(this.channel);
         } catch (SQLException e) {
             e.printStackTrace();

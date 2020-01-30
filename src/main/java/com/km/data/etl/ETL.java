@@ -15,6 +15,7 @@ public class ETL {
     public static void process(Channel channel, Configuration configuration) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchFieldException {
 
         JSONArray classAndParameters = JSONArray.parseArray(configuration.toJSON());
+
         for(Object object:classAndParameters){
             JSONObject oneClassAndParameter = (JSONObject) object;
             processRecord(channel,oneClassAndParameter,configuration);

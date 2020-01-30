@@ -17,7 +17,7 @@ public class testStart {
 
         System.setProperty("hadoop.home.dir", "F:\\github\\winutils-master\\hadoop-2.6.0");
         String corePath = "src/main/resources/static/core.json";
-        String jobPath = "src/main/resources/static/job/Mysql2Mysqljob.json";
+        String jobPath = "src/main/resources/static/job/job.json";
 
         JSONObject corejson = JSONObject.parseObject(FileUtil.readFile(corePath));
         JSONObject jobjson = JSONObject.parseObject(FileUtil.readFile(jobPath));

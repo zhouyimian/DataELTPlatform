@@ -1,7 +1,7 @@
 {
   "ETLplugins": [
     {
-      "name": "filterNullValuePlugin",
+      "pluginName": "filterNullValuePlugin",
       "classPath": "com.km.data.plugin.filterNullValuePlugin"
     }
   ]

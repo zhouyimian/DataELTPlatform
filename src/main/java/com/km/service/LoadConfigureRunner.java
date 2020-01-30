@@ -68,11 +68,11 @@ public class LoadConfigureRunner implements CommandLineRunner {
                 Configuration configuration = Configuration.from(FileUtil.readFile(file.getAbsolutePath()));
                 List<JSONObject> plugList = configuration.getList("ETLplugins", JSONObject.class);
                 for (JSONObject object : plugList) {
-                    String name = object.getString("name");
-                    if (LoadConfigureUtil.getEtlPlugNameToConf().get(name) != null) {
+                    String pluginName = object.getString("pluginName");
+                    if (LoadConfigureUtil.getEtlPlugNameToConf().get(pluginName) != null) {
                         throw new serviceException("DataETL平台不允许出现name一样的ETL插件！");
                     } else {
-                        LoadConfigureUtil.getEtlPlugNameToConf().put(name, loadPlugParameter(object));
+                        LoadConfigureUtil.getEtlPlugNameToConf().put(pluginName, loadPlugParameter(object));
                     }
                 }
             }
@@ -90,8 +90,11 @@ public class LoadConfigureRunner implements CommandLineRunner {
             boolean isannotation = field.isAnnotationPresent(com.km.data.common.annotations.Field.class);
             if (isannotation) {
                 JSONObject temp = new JSONObject();
-                temp.put(field.getAnnotation(com.km.data.common.annotations.Field.class).fieldName(),"");
+
+                temp.put("filedName",field.getAnnotation(com.km.data.common.annotations.Field.class).fieldName());
                 temp.put("desc",field.getAnnotation(com.km.data.common.annotations.Field.class).desc());
+                temp.put("necessary",field.getAnnotation(com.km.data.common.annotations.Field.class).necessary());
+                temp.put("pluginTrueField",field.getName());
                 array.add(temp);
             }
         }

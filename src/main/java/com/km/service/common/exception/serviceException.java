@@ -1,6 +1,6 @@
 package com.km.service.common.exception;
 
-public class serviceException extends Throwable {
+public class serviceException extends RuntimeException  {
     private String errormesaage;
     public serviceException(String errormesaage){
         this.errormesaage = errormesaage;

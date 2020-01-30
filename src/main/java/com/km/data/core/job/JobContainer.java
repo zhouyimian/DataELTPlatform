@@ -84,7 +84,6 @@ public class JobContainer extends AbstractContainer {
     }
 
 
-
     /**
      * reader和writer的初始化
      */
@@ -98,57 +97,56 @@ public class JobContainer extends AbstractContainer {
         Configuration readerConfig = Configuration.from(FileUtil.readFile(readerConfigPath));
         Configuration writerConfig = Configuration.from(FileUtil.readFile(writerConfigPath));
 
-        List<JSONObject> readerPlugins = readerConfig.getList("reader",JSONObject.class);
-        List<JSONObject> writerPlugins = writerConfig.getList("writer",JSONObject.class);
+        List<JSONObject> readerPlugins = readerConfig.getList("reader", JSONObject.class);
+        List<JSONObject> writerPlugins = writerConfig.getList("writer", JSONObject.class);
 
         String readerPluginClass = null;
         String writerPluginClass = null;
 
-        for(JSONObject readerPluginConfig:readerPlugins){
-            if(readerPluginConfig.getString("name").equals(this.readerPluginName)){
+        for (JSONObject readerPluginConfig : readerPlugins) {
+            if (readerPluginConfig.getString("name").equals(this.readerPluginName)) {
                 readerPluginClass = readerPluginConfig.getString("classPath");
                 break;
             }
         }
-        if(readerPluginClass==null){
+        if (readerPluginClass == null) {
             throw DataETLException.asDataETLException(CommonErrorCode.CONFIG_ERROR,
-                    "配置的reader[ "+ this.readerPluginName +"]不存在，请重新输入reader");
+                    "配置的reader[ " + this.readerPluginName + "]不存在，请重新输入reader");
         }
-        for(JSONObject writerPluginConfig:writerPlugins){
-            if(writerPluginConfig.getString("name").equals(this.writerPluginName)){
+        for (JSONObject writerPluginConfig : writerPlugins) {
+            if (writerPluginConfig.getString("name").equals(this.writerPluginName)) {
                 writerPluginClass = writerPluginConfig.getString("classPath");
                 break;
             }
         }
-        if(writerPluginClass==null){
+        if (writerPluginClass == null) {
             throw DataETLException.asDataETLException(CommonErrorCode.CONFIG_ERROR,
-                    "配置的writer[ "+ this.writerPluginName +"]不存在，请重新输入writer");
+                    "配置的writer[ " + this.writerPluginName + "]不存在，请重新输入writer");
         }
-        configuration.set("test","test");
+        configuration.set("test", "test");
         Configuration readerParameter = configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_READER_PARAMETER);
         Configuration writerParameter = configuration.getConfiguration(CoreConstant.DATAX_JOB_CONTENT_WRITER_PARAMETER);
-        readerParameter.set("readerClassPath",readerPluginClass);
-        writerParameter.set("writerClassPath",writerPluginClass);
+        readerParameter.set("readerClassPath", readerPluginClass);
+        writerParameter.set("writerClassPath", writerPluginClass);
 
 
-        this.jobReader = (Reader.Job) createJob(readerPluginClass,readerParameter);
-        this.jobWriter = (Writer.Job) createJob(writerPluginClass,writerParameter);
+        this.jobReader = (Reader.Job) createJob(readerPluginClass, readerParameter);
+        this.jobWriter = (Writer.Job) createJob(writerPluginClass, writerParameter);
     }
-
 
 
     private Object createJob(String className, Configuration configuration) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         Class clazz = Class.forName(className);
         Class innerClazz[] = clazz.getDeclaredClasses();
         Constructor constructor = null;
-        for(Class cls : innerClazz){
-            if(cls.getName().contains("Job")){
-               constructor = cls.getConstructor(Configuration.class);
+        for (Class cls : innerClazz) {
+            if (cls.getName().contains("Job")) {
+                constructor = cls.getConstructor(Configuration.class);
             }
         }
-        if(constructor==null){
+        if (constructor == null) {
             throw DataETLException.asDataETLException
-                    (CommonErrorCode.RUNTIME_ERROR,"您实现的reader或者writer插件缺少实现Job内部类");
+                    (CommonErrorCode.RUNTIME_ERROR, "您实现的reader或者writer插件缺少实现Job内部类");
         }
         return constructor.newInstance(configuration);
     }
@@ -171,9 +169,10 @@ public class JobContainer extends AbstractContainer {
         List<Configuration> contentConfig = mergeReaderAndWriterTaskConfigs(
                 readerTaskConfigs, writerTaskConfigs);
 
-        for(Configuration configuration:contentConfig){
-            configuration.set("ETL",this.configuration.getList(CoreConstant.DATAX_JOB_CONTENT_ETL,String.class));
-        }
+        if (configuration.get(CoreConstant.DATAX_JOB_CONTENT_ETL) != null)
+            for (Configuration configuration : contentConfig) {
+                configuration.set("ETL", this.configuration.getList(CoreConstant.DATAX_JOB_CONTENT_ETL, String.class));
+            }
 
 
         this.configuration.set(CoreConstant.DATAX_JOB_CONTENT, contentConfig);
@@ -196,8 +195,8 @@ public class JobContainer extends AbstractContainer {
         this.taskExecutorService = Executors
                 .newFixedThreadPool(configurations.size());
 
-        for(Configuration conf:configurations){
-            TaskRunner runner = new TaskRunner(conf,countDownLatch);
+        for (Configuration conf : configurations) {
+            TaskRunner runner = new TaskRunner(conf, countDownLatch);
             taskExecutorService.execute(runner);
         }
 
@@ -206,9 +205,9 @@ public class JobContainer extends AbstractContainer {
     }
 
 
-    public List<Configuration> doReaderSplit(int adviceNumber){
+    public List<Configuration> doReaderSplit(int adviceNumber) {
         List<Configuration> readerSlicesConfigs = this.jobReader.split(adviceNumber);
-        if(readerSlicesConfigs==null||readerSlicesConfigs.size()==0){
+        if (readerSlicesConfigs == null || readerSlicesConfigs.size() == 0) {
             throw DataETLException.asDataETLException(
                     FrameworkErrorCode.PLUGIN_SPLIT_ERROR,
                     "reader切分的task数目不能小于等于0");
