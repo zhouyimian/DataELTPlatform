@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Mapper
 public interface UserMapper {
-    @Select({"select * from user where Username = #{Username} and Password = #{Password} "})
-    public User login(@Param("Username") String username, @Param("Password") String password);
+    @Select({"select * from user where Username = #{username} and Password = #{password} "})
+    public User login(@Param("username") String username, @Param("password") String password);
 
-    @Insert({"insert into user values(#{Userid},#{Username},#{Password}) "})
-    public void register(@Param("Userid") String userid,@Param("Username") String username, @Param("Password") String password);
+    @Insert({"insert into user values(#{userId},#{username},#{password}) "})
+    public void register(@Param("userId") String userid,@Param("username") String username, @Param("password") String password);
 
-    @Select({"select * from user where Username = #{Username}"})
-    User findUserByUserName(@Param("Username") String username);
+    @Select({"select * from user where username = #{username}"})
+    User findUserByUserName(@Param("username") String username);
 }

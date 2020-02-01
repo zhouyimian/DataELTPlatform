@@ -1,8 +1,12 @@
 package com.km.service;
 
-import com.km.service.common.exception.serviceException;
+
+import java.text.DateFormat;
+import java.util.Date;
 
 public class test {
     public static void main(String[] args) {
+        Date date = new Date();
+        System.out.println(date);
     }
 }

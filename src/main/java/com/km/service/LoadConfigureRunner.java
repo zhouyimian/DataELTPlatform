@@ -107,5 +107,18 @@ public class LoadConfigureRunner implements CommandLineRunner {
         String writerConfigPath = "src/main/resources/static/config/writerConfiguration.json";
         LoadConfigureRunner test = new LoadConfigureRunner();
         test.run(args);
+        Map<String, Configuration> reader = LoadConfigureUtil.getReaderPlugNameToConf();
+        Map<String, Configuration> writer = LoadConfigureUtil.getWriterPlugNameToConf();
+        Map<String, Configuration> etl = LoadConfigureUtil.getEtlPlugNameToConf();
+        parseMap(etl);
+    }
+    private static String parseMap(Map<String, Configuration> configurationMap) {
+        JSONArray array = new JSONArray();
+        for(Map.Entry<String,Configuration> entry:configurationMap.entrySet()){
+            JSONObject object = new JSONObject();
+            Configuration value = entry.getValue();
+            array.add(JSONObject.parseObject(value.toJSON()));
+        }
+        return array.toJSONString();
     }
 }

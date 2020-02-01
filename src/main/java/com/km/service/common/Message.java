@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 
 public class Message {
     String exception;
-    String data;
+    JSONObject data;
 
     public String getException() {
         return exception;
@@ -14,11 +14,11 @@ public class Message {
         this.exception = exception;
     }
 
-    public String getData() {
+    public JSONObject getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(JSONObject data) {
         this.data = data;
     }
 }

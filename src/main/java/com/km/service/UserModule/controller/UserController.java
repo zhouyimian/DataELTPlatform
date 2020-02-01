@@ -30,7 +30,7 @@ public class UserController {
 
     @UnAuthToken
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public String login(HttpServletRequest req) {
+    public Object login(HttpServletRequest req) {
 
         String username = req.getParameter("username");
         String password = MD5Utils.getMD5(req.getParameter("password"));
@@ -43,12 +43,12 @@ public class UserController {
 
         JSONObject message = new JSONObject();
         message.put("token",token);
-        return message.toJSONString();
+        return JSONObject.toJSON(message);
     }
 
     @UnAuthToken
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public String register(HttpServletRequest req){
+    public Object register(HttpServletRequest req){
         String username = req.getParameter("username");
         String password = MD5Utils.getMD5(req.getParameter("password"));
         String userid = UUID.randomUUID().toString().replace("-","");
@@ -60,16 +60,16 @@ public class UserController {
         }
         JSONObject message = new JSONObject();
         message.put("message","注册成功");
-        return message.toJSONString();
+        return JSONObject.toJSON(message);
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    public String logout(HttpServletRequest req){
+    public Object logout(HttpServletRequest req){
         String token = req.getHeader("token");
         redisUtil.delete(token);
         JSONObject message = new JSONObject();
         message.put("message","注销成功");
-        return message.toJSONString();
+        return JSONObject.toJSON(message);
     }
 
 

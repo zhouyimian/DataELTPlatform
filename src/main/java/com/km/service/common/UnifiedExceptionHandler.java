@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UnifiedExceptionHandler {
 
     @ExceptionHandler(serviceException.class)
-    public String handleBusinessException(serviceException exception){
+    public Object handleBusinessException(serviceException exception){
         Message message = new Message();
         message.setException(exception.getErrormesaage());
-        return JSONObject.toJSONString(message);
+        return JSONObject.toJSON(message);
     }
 }

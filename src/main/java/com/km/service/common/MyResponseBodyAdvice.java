@@ -17,11 +17,11 @@ public class MyResponseBodyAdvice implements ResponseBodyAdvice {
     }
 
     @Override
-    public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
+    public Object beforeBodyWrite(Object obj, MethodParameter methodParameter, MediaType mediaType, Class aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
         Message message = new Message();
-        if(o instanceof Message)
-            return JSONObject.toJSONString(o);
-        message.setData((String) o);
-        return JSONObject.toJSONString(message);
+        if(obj instanceof Message)
+            return JSONObject.toJSON(obj);
+        message.setData((JSONObject)obj);
+        return JSONObject.toJSON(message);
     }
 }
