@@ -14,25 +14,25 @@ public interface ProcessMapper {
     @Select({"select * from process where processId = #{processId}"})
     public Process getProcessByProcessId(@Param("processId") String processId);
 
-    @Select({"SELECT p.processid,p.processname,u.username,p.processcontent,p.state,p.updatetime FROM PROCESS p,USER u WHERE p.userid = u.userid ORDER BY updatetime asc limit #{start},#{count} "})
-    public List<ProcessUseridDto> findAllProcess(@Param("start") int start, @Param("count") int count);
+    @Select({"SELECT p.processId,p.processName,u.username,p.processContent,p.state,p.updateTime,p.runningJobCount FROM PROCESS p,USER u WHERE p.userId = u.userId ORDER BY updateTime DESC limit #{start},#{count} "})
+    public List<ProcessUseridDto> getAllProcess(@Param("start") int start, @Param("count") int count);
 
 
     @Insert({"insert into  process values (#{process.processId},#{process.processName}," +
-            "#{process.userId},#{process.processContent},#{process.state},#{process.updateTime})"})
+            "#{process.userId},#{process.processContent},#{process.state},#{process.updateTime},#{process.runningJobCount})"})
     public void addProcess(@Param("process")Process process);
 
 
-    @Update({"update Process set processname=#{process.processName}," +
+    @Update({"update Process set processName=#{process.processName}," +
             "processContent=#{process.processContent},state=#{process.state}," +
-            "updatetime=#{process.updateTime}" +
+            "updateTime=#{process.updateTime},runningJobCount=#{process.runningJobCount} " +
             "where processId = #{process.processId}"})
     public void updateProcess(@Param("process") Process process);
 
     @Delete({"delete from process where processId = #{processId}"})
-    public void deleteProcess(String processId);
+    public void deleteProcess(@Param("processId")String processId);
 
     @Select({"select count(*) from process"})
-    public int processCount();
+    public int getProcessCount();
 
 }

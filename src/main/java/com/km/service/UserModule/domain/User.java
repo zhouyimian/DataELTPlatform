@@ -4,6 +4,7 @@ public class User {
     private String userId;
     private String userName;
     private String password;
+    private String nickName;
 
 
     public String getUserId() {
@@ -29,10 +30,20 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public String getNickName() {
+        return nickName;
+    }
+
+    public void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "userId='" + userId + '\'' +
+                ", nickName='" + nickName + '\'' +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 '}';

@@ -1,5 +1,6 @@
 package com.km.service.UserModule.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.km.service.UserModule.domain.User;
 import com.km.service.UserModule.service.UserService;
@@ -8,6 +9,7 @@ import com.km.service.common.exception.serviceException;
 import com.km.service.common.utils.MD5Utils;
 import com.km.service.common.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @RestController
+@CrossOrigin
 public class UserController {
 
     @Autowired
@@ -31,18 +34,19 @@ public class UserController {
     @UnAuthToken
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public Object login(HttpServletRequest req) {
-
         String username = req.getParameter("username");
         String password = MD5Utils.getMD5(req.getParameter("password"));
         User user = userService.login(username,password);
-        if(user==null)
-            return new serviceException("用户名或者密码错误").toString();
+        if(user==null) {
+            return new serviceException("用户名或者密码错误");
+        }
         String source = JSONObject.toJSONString(user)+System.currentTimeMillis();
         String token = MD5Utils.getMD5(source);
         redisUtil.set(token,JSONObject.toJSONString(user),60*60, TimeUnit.SECONDS);
 
         JSONObject message = new JSONObject();
         message.put("token",token);
+        message.put("nickname",null==user.getNickName()?username:user.getNickName());
         return JSONObject.toJSON(message);
     }
 

@@ -33,27 +33,27 @@ public class AuthInterceptor  implements HandlerInterceptor {
         //如果controller中有些方法使用了该注解，则不会拦截
         if(null!=unAuthToken){
             return true;
-        }
-        if (StringUtils.isEmpty(token)) {
-            response.getWriter().print("用户未登录，请登录后操作！");
-            return false;
-        }
+        }else{
+            if (StringUtils.isEmpty(token)) {
+                response.getWriter().print("用户未登录，请登录后操作！");
+                return false;
+            }
 
+            if (null == redisutil){
+                BeanFactory factory = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
+                redisutil = (RedisUtil) factory.getBean("RedisUtil");
+            }
 
-        if (null == redisutil){
-            BeanFactory factory = WebApplicationContextUtils.getRequiredWebApplicationContext(request.getServletContext());
-            redisutil = (RedisUtil) factory.getBean("RedisUtil");
+            Object loginStatus = redisutil.get(token);
+            if(Objects.isNull(loginStatus)){
+                response.getWriter().print("token错误，请查看！");
+                return false;
+            }
+            JSONObject object = JSONObject.parseObject(redisutil.get(token));
+            User user = JSONObject.toJavaObject(object,User.class);
+            request.setAttribute("user",user);
+            return true;
         }
-
-        Object loginStatus = redisutil.get(token);
-        if(Objects.isNull(loginStatus)){
-            response.getWriter().print("token错误，请查看！");
-            return false;
-        }
-        JSONObject object = JSONObject.parseObject(redisutil.get(token));
-        User user = JSONObject.toJavaObject(object,User.class);
-        request.setAttribute("user",user);
-        return true;
     }
 
     @Override

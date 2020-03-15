@@ -1,6 +1,5 @@
 package com.km.service.common;
 
-import com.alibaba.fastjson.JSONObject;
 import com.km.service.common.exception.serviceException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,6 +11,6 @@ public class UnifiedExceptionHandler {
     public Object handleBusinessException(serviceException exception){
         Message message = new Message();
         message.setException(exception.getErrormesaage());
-        return JSONObject.toJSON(message);
+        return message;
     }
 }

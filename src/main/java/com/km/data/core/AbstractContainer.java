@@ -2,6 +2,7 @@ package com.km.data.core;
 
 
 import com.km.data.common.util.Configuration;
+import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import org.apache.commons.lang.Validate;
 
 /**
@@ -9,6 +10,8 @@ import org.apache.commons.lang.Validate;
  */
 public abstract class AbstractContainer {
     protected Configuration configuration;
+
+    protected AbstractContainerCommunicator containerCommunicator;
 
 
     public AbstractContainer(Configuration configuration) {
@@ -19,6 +22,14 @@ public abstract class AbstractContainer {
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public AbstractContainerCommunicator getContainerCommunicator() {
+        return containerCommunicator;
+    }
+
+    public void setContainerCommunicator(AbstractContainerCommunicator containerCommunicator) {
+        this.containerCommunicator = containerCommunicator;
     }
 
     public abstract void start();

@@ -21,12 +21,12 @@ public class LoadConfigureRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            String rootETLPlugPath = PropertiesUtil.getProperty("ETLPlugConfigureDir");
+            String ETLPlugConfigurePath = PropertiesUtil.getProperty("ETLPlugConfigurePath");
             String readerConfigPath = PropertiesUtil.getProperty("readerConfigurePath");
             String writerConfigPath = PropertiesUtil.getProperty("writerConfigurePath");
-            loadETLPluginConfiguration(rootETLPlugPath);
-            loadReaderAndWriterPluginConfiguration(LoadConfigureUtil.getReaderPlugNameToConf(),readerConfigPath);
-            loadReaderAndWriterPluginConfiguration(LoadConfigureUtil.getWriterPlugNameToConf(),writerConfigPath);
+            loadETLPluginConfiguration(ETLPlugConfigurePath);
+            loadReaderAndWriterPluginConfiguration(LoadConfigureUtil.getReaderPlugNameToConf(), readerConfigPath);
+            loadReaderAndWriterPluginConfiguration(LoadConfigureUtil.getWriterPlugNameToConf(), writerConfigPath);
         } catch (serviceException | ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -34,47 +34,41 @@ public class LoadConfigureRunner implements CommandLineRunner {
 
     /**
      * 加载reader或者writer配置文件
-     * @param map 存储 插件名->插件配置 映射
+     *
+     * @param map  存储 插件名->插件配置 映射
      * @param path 配置文件路径
      */
-    private void loadReaderAndWriterPluginConfiguration(Map<String,Configuration> map,String path) throws serviceException {
+    private void loadReaderAndWriterPluginConfiguration(Map<String, Configuration> map, String path) throws serviceException {
         Configuration configuration = Configuration.from(FileUtil.readFile(path));
-        List<JSONObject> AllReaderOrWriter = configuration.getList("reader",JSONObject.class);
-        if(AllReaderOrWriter==null) AllReaderOrWriter = configuration.getList("writer",JSONObject.class);
+        List<JSONObject> AllReaderOrWriter = configuration.getList("reader", JSONObject.class);
+        if (AllReaderOrWriter == null) AllReaderOrWriter = configuration.getList("writer", JSONObject.class);
 
-        for(JSONObject parameter:AllReaderOrWriter){
+        for (JSONObject parameter : AllReaderOrWriter) {
             String name = parameter.getString("name");
-            if(map.get(name)!=null){
+            if (map.get(name) != null) {
                 throw new serviceException("DataETL平台不允许出现name一样的Reader或者Writer插件！");
-            }else{
-                map.put(name,Configuration.from(parameter));
+            } else {
+                map.put(name, Configuration.from(parameter));
             }
         }
     }
 
     /**
      * 加载指定目录下所有关于ETL插件的配置文件
-     * @param rootETLPlugPath 目录路径
+     *
+     * @param fileName 目录路径
      * @throws serviceException
      * @throws ClassNotFoundException
      */
-    public void loadETLPluginConfiguration(String rootETLPlugPath) throws serviceException, ClassNotFoundException {
-        File rootDir = new File(rootETLPlugPath);
-        File[] files = rootDir.listFiles();
-        for(File file : files){
-            if(file.isDirectory()){
-                loadETLPluginConfiguration(file.getAbsolutePath());
+    public void loadETLPluginConfiguration(String fileName) throws serviceException, ClassNotFoundException {
+        Configuration configuration = Configuration.from(FileUtil.readFile(fileName));
+        List<JSONObject> plugList = configuration.getList("ETLplugins", JSONObject.class);
+        for (JSONObject object : plugList) {
+            String pluginName = object.getString("pluginName");
+            if (LoadConfigureUtil.getEtlPlugNameToConf().get(pluginName) != null) {
+                throw new serviceException("DataETL平台不允许出现name一样的ETL插件！");
             } else {
-                Configuration configuration = Configuration.from(FileUtil.readFile(file.getAbsolutePath()));
-                List<JSONObject> plugList = configuration.getList("ETLplugins", JSONObject.class);
-                for (JSONObject object : plugList) {
-                    String pluginName = object.getString("pluginName");
-                    if (LoadConfigureUtil.getEtlPlugNameToConf().get(pluginName) != null) {
-                        throw new serviceException("DataETL平台不允许出现name一样的ETL插件！");
-                    } else {
-                        LoadConfigureUtil.getEtlPlugNameToConf().put(pluginName, loadPlugParameter(object));
-                    }
-                }
+                LoadConfigureUtil.getEtlPlugNameToConf().put(pluginName, loadPlugParameter(object));
             }
         }
     }
@@ -91,14 +85,14 @@ public class LoadConfigureRunner implements CommandLineRunner {
             if (isannotation) {
                 JSONObject temp = new JSONObject();
 
-                temp.put("filedName",field.getAnnotation(com.km.data.common.annotations.Field.class).fieldName());
-                temp.put("desc",field.getAnnotation(com.km.data.common.annotations.Field.class).desc());
-                temp.put("necessary",field.getAnnotation(com.km.data.common.annotations.Field.class).necessary());
-                temp.put("pluginTrueField",field.getName());
+                temp.put("filedName", field.getAnnotation(com.km.data.common.annotations.Field.class).fieldName());
+                temp.put("desc", field.getAnnotation(com.km.data.common.annotations.Field.class).desc());
+                temp.put("necessary", field.getAnnotation(com.km.data.common.annotations.Field.class).necessary());
+                temp.put("pluginTrueField", field.getName());
                 array.add(temp);
             }
         }
-        object.put("parameters",array);
+        object.put("parameters", array);
         return Configuration.from(object);
     }
 
@@ -112,9 +106,10 @@ public class LoadConfigureRunner implements CommandLineRunner {
         Map<String, Configuration> etl = LoadConfigureUtil.getEtlPlugNameToConf();
         parseMap(etl);
     }
+
     private static String parseMap(Map<String, Configuration> configurationMap) {
         JSONArray array = new JSONArray();
-        for(Map.Entry<String,Configuration> entry:configurationMap.entrySet()){
+        for (Map.Entry<String, Configuration> entry : configurationMap.entrySet()) {
             JSONObject object = new JSONObject();
             Configuration value = entry.getValue();
             array.add(JSONObject.parseObject(value.toJSON()));

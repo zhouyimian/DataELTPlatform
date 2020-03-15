@@ -6,17 +6,19 @@ import com.km.data.common.exception.CommonErrorCode;
 import com.km.data.common.exception.DataETLException;
 import com.km.data.common.util.Configuration;
 import com.km.data.core.AbstractContainer;
+import com.km.data.core.job.scheduler.AbstractScheduler;
+import com.km.data.core.job.scheduler.processinner.StandAloneScheduler;
+import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
+import com.km.data.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.km.data.core.util.FrameworkErrorCode;
+import com.km.data.core.util.JobAssignUtil;
 import com.km.data.core.util.container.CoreConstant;
-import com.km.data.reader.*;
-import com.km.data.writer.*;
+import com.km.data.reader.Reader;
+import com.km.data.writer.Writer;
 import com.km.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -33,6 +35,8 @@ public class JobContainer extends AbstractContainer {
     private static final Logger LOG = LoggerFactory
             .getLogger(JobContainer.class);
 
+    private long jobId;
+
     private String readerPluginName;
 
     private String writerPluginName;
@@ -44,10 +48,7 @@ public class JobContainer extends AbstractContainer {
 
     private Writer.Job jobWriter;
 
-
     private Integer needChannelNumber;
-
-    private ExecutorService taskExecutorService;
 
 
     public JobContainer(Configuration configuration) {
@@ -69,9 +70,7 @@ public class JobContainer extends AbstractContainer {
             this.schedule();
             LOG.debug("jobContainer starts to do post ...");
             this.post();
-
             this.destory();
-
         } catch (Throwable e) {
             LOG.error("Exception when job run", e);
 
@@ -82,7 +81,6 @@ public class JobContainer extends AbstractContainer {
                     FrameworkErrorCode.RUNTIME_ERROR, e);
         }
     }
-
 
     /**
      * reader和writer的初始化
@@ -174,34 +172,25 @@ public class JobContainer extends AbstractContainer {
                 configuration.set("ETL", this.configuration.getList(CoreConstant.DATAX_JOB_CONTENT_ETL, String.class));
             }
 
-
         this.configuration.set(CoreConstant.DATAX_JOB_CONTENT, contentConfig);
-
         return contentConfig.size();
     }
 
-    public void schedule() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, InterruptedException {
+    public void schedule() {
+        int channelsPerTaskGroup = this.configuration.getInt(
+                CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_CHANNEL, 5);
         int taskNumber = this.configuration.getList(
                 CoreConstant.DATAX_JOB_CONTENT).size();
-
         this.needChannelNumber = Math.min(this.needChannelNumber, taskNumber);
+        List<Configuration> taskGroupConfigs = JobAssignUtil.assignFairly(this.configuration,
+                this.needChannelNumber, channelsPerTaskGroup);
 
-        startAllTask(this.configuration.getListConfiguration(CoreConstant.DATAX_JOB_CONTENT));
-
-    }
-
-    private void startAllTask(List<Configuration> configurations) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
-        CountDownLatch countDownLatch = new CountDownLatch(configurations.size());
-        this.taskExecutorService = Executors
-                .newFixedThreadPool(configurations.size());
-
-        for (Configuration conf : configurations) {
-            TaskRunner runner = new TaskRunner(conf, countDownLatch);
-            taskExecutorService.execute(runner);
+        try {
+            StandAloneScheduler scheduler = initStandaloneScheduler(this.configuration);
+            scheduler.schedule(taskGroupConfigs);
+        } catch (Exception e) {
+            throw DataETLException.asDataETLException(FrameworkErrorCode.RUNTIME_ERROR, e);
         }
-
-        countDownLatch.await();
-        this.taskExecutorService.shutdown();
     }
 
 
@@ -260,6 +249,12 @@ public class JobContainer extends AbstractContainer {
         return contentConfigs;
     }
 
+    private StandAloneScheduler initStandaloneScheduler(Configuration configuration) {
+        AbstractContainerCommunicator containerCommunicator = new StandAloneJobContainerCommunicator(configuration);
+        super.setContainerCommunicator(containerCommunicator);
+
+        return new StandAloneScheduler(containerCommunicator);
+    }
 
     @Override
     public void post() {

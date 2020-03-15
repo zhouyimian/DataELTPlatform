@@ -1,5 +1,7 @@
 package com.km.utils;
 
+import org.springframework.core.io.ClassPathResource;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,7 +15,8 @@ public class FileUtil {
         InputStream in = null;
         try {
             // 文件输入流
-            in = new FileInputStream(filePath);
+            ClassPathResource classPathResource = new ClassPathResource(filePath);
+            in = classPathResource.getInputStream();
             while (in.read(b) != -1) {
                 // 字符串拼接
                 txtContent.append(new String(b));

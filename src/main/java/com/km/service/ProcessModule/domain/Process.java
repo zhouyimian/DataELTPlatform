@@ -9,6 +9,15 @@ public class Process {
     private String processContent;
     private String state;
     private Date updateTime;
+    private int runningJobCount;
+
+    public int getRunningJobCount() {
+        return runningJobCount;
+    }
+
+    public void setRunningJobCount(int runningJobCount) {
+        this.runningJobCount = runningJobCount;
+    }
 
     public String getProcessId() {
         return processId;
@@ -67,6 +76,7 @@ public class Process {
                 ", processContent='" + processContent + '\'' +
                 ", state='" + state + '\'' +
                 ", updateTime=" + updateTime +
+                ", runningJobCount=" + runningJobCount +
                 '}';
     }
 }

@@ -21,7 +21,10 @@ public class MyResponseBodyAdvice implements ResponseBodyAdvice {
         Message message = new Message();
         if(obj instanceof Message)
             return JSONObject.toJSON(obj);
-        message.setData((JSONObject)obj);
+        if(obj instanceof serviceException)
+            message.setException(((serviceException)obj).getErrormesaage());
+        else
+            message.setData((JSONObject)obj);
         return JSONObject.toJSON(message);
     }
 }

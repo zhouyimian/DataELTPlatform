@@ -54,19 +54,7 @@ public class TaskRunner implements Runnable {
             if(this.configuration.getConfiguration("ETL")!=null)
                 ETL.process(this.channel,this.configuration.getConfiguration("ETL"));
             this.writer.startWrite(this.channel);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
+        } catch (SQLException | ClassNotFoundException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException | InvocationTargetException | InstantiationException e) {
             e.printStackTrace();
         } finally {
             countDownLatch.countDown();

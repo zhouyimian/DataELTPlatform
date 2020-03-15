@@ -82,6 +82,7 @@ public class MysqlReader extends Reader {
                 boolean needSplitTable = adviceNumber > 1
                         && StringUtils.isNotBlank(splitPk);
                 if (needSplitTable) {
+                    adviceNumber = adviceNumber * 5;
                     // 尝试对表，切分为adviceNumber份
                     tempSlice = sliceConfig.clone();
                     tempSlice.set(Key.TABLE, table);

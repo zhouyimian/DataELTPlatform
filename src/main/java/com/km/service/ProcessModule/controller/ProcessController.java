@@ -28,14 +28,12 @@ public class ProcessController {
     @Autowired
     private ProcessService processService;
 
-    @Autowired
-    private PermissionService permissionService;
 
     @RequestMapping(value = "/getAllProcess", method = RequestMethod.POST)
     public Object getAllProcess(HttpServletRequest req) {
         int pageSize = Integer.parseInt(req.getParameter("pageSize"));
         int pageNumber = Integer.parseInt(req.getParameter("pageNumber"));
-        List<ProcessUseridDto> list = processService.findAllProcess(pageSize,pageNumber);
+        List<ProcessUseridDto> list = processService.getAllProcess(pageSize,pageNumber);
         int totalSize = processService.getProcessCount();
         int totalPages = totalSize/pageSize+(totalSize%pageSize==0?0:1);
         JSONObject message = new JSONObject();
