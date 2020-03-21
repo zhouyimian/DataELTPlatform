@@ -4,6 +4,7 @@ import com.km.data.common.util.Configuration;
 import com.km.data.core.enums.State;
 import com.km.data.core.statistics.communication.Communication;
 import com.km.data.core.statistics.communication.CommunicationTool;
+import com.km.data.core.statistics.communication.LocalTGCommunicationManager;
 import com.km.data.core.statistics.container.collector.ProcessInnerCollector;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.report.ProcessInnerReporter;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 public class StandAloneJobContainerCommunicator extends AbstractContainerCommunicator {
+    private LocalTGCommunicationManager TGCommnicationManager;
+
     private static final Logger LOG = LoggerFactory
             .getLogger(StandAloneJobContainerCommunicator.class);
 
@@ -23,11 +26,14 @@ public class StandAloneJobContainerCommunicator extends AbstractContainerCommuni
         super.setCollector(new ProcessInnerCollector(configuration.getLong(
                 CoreConstant.DATAX_CORE_CONTAINER_JOB_ID)));
         super.setReporter(new ProcessInnerReporter());
+        TGCommnicationManager = new LocalTGCommunicationManager();
+        super.getReporter().setTGCommunicationManager(TGCommnicationManager);
+        super.getCollector().setTGCommunicationManager(TGCommnicationManager);
     }
 
     @Override
     public void registerCommunication(List<Configuration> configurationList) {
-        super.getCollector().registerTGCommunication(configurationList);
+        TGCommnicationManager = super.getCollector().registerTGCommunication(configurationList);
     }
 
     @Override
@@ -58,5 +64,9 @@ public class StandAloneJobContainerCommunicator extends AbstractContainerCommuni
     @Override
     public Map<Integer, Communication> getCommunicationMap() {
         return super.getCollector().getTGCommunicationMap();
+    }
+
+    public LocalTGCommunicationManager getTGCommnicationManager() {
+        return TGCommnicationManager;
     }
 }

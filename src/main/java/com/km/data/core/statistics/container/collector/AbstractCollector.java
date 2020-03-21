@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractCollector {
     private Map<Integer, Communication> taskCommunicationMap = new ConcurrentHashMap<Integer, Communication>();
     private Long jobId;
+    private volatile LocalTGCommunicationManager TGCommunicationManager;
 
     public Map<Integer, Communication> getTaskCommunicationMap() {
         return taskCommunicationMap;
@@ -28,12 +29,13 @@ public abstract class AbstractCollector {
         this.jobId = jobId;
     }
 
-    public void registerTGCommunication(List<Configuration> taskGroupConfigurationList) {
+    public LocalTGCommunicationManager registerTGCommunication(List<Configuration> taskGroupConfigurationList) {
         for (Configuration config : taskGroupConfigurationList) {
             int taskGroupId = config.getInt(
                     CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_ID);
-            LocalTGCommunicationManager.registerTaskGroupCommunication(taskGroupId, new Communication());
+            TGCommunicationManager.registerTaskGroupCommunication(taskGroupId, new Communication());
         }
+        return TGCommunicationManager;
     }
 
     public void registerTaskCommunication(List<Configuration> taskConfigurationList) {
@@ -58,14 +60,22 @@ public abstract class AbstractCollector {
     public abstract Communication collectFromTaskGroup();
 
     public Map<Integer, Communication> getTGCommunicationMap() {
-        return LocalTGCommunicationManager.getTaskGroupCommunicationMap();
+        return TGCommunicationManager.getTaskGroupCommunicationMap();
     }
 
     public Communication getTGCommunication(Integer taskGroupId) {
-        return LocalTGCommunicationManager.getTaskGroupCommunication(taskGroupId);
+        return TGCommunicationManager.getTaskGroupCommunication(taskGroupId);
     }
 
     public Communication getTaskCommunication(Integer taskId) {
         return this.taskCommunicationMap.get(taskId);
+    }
+
+    public LocalTGCommunicationManager getTGCommunicationManager() {
+        return TGCommunicationManager;
+    }
+
+    public void setTGCommunicationManager(LocalTGCommunicationManager TGCommunicationManager) {
+        this.TGCommunicationManager = TGCommunicationManager;
     }
 }

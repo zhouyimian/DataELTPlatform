@@ -6,6 +6,7 @@ import com.km.data.common.util.FrameworkErrorCode;
 import com.km.data.core.enums.State;
 import com.km.data.core.statistics.communication.Communication;
 import com.km.data.core.statistics.communication.CommunicationTool;
+import com.km.data.core.statistics.communication.LocalTGCommunicationManager;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.util.container.CoreConstant;
 import org.apache.commons.lang.Validate;
@@ -33,11 +34,6 @@ public abstract class AbstractScheduler {
     public void schedule(List<Configuration> configurations) {
         Validate.notNull(configurations,
                 "scheduler配置不能为空");
-        int jobReportIntervalInMillSec = configurations.get(0).getInt(
-                CoreConstant.DATAX_CORE_CONTAINER_JOB_REPORTINTERVAL, 30000);
-        int jobSleepIntervalInMillSec = configurations.get(0).getInt(
-                CoreConstant.DATAX_CORE_CONTAINER_JOB_SLEEPINTERVAL, 10000);
-
         this.jobId = configurations.get(0).getLong(
                 CoreConstant.DATAX_CORE_CONTAINER_JOB_ID);
 
@@ -46,66 +42,10 @@ public abstract class AbstractScheduler {
          */
         this.containerCommunicator.registerCommunication(configurations);
 
-        int totalTasks = calculateTaskCount(configurations);
-        startAllTaskGroup(configurations);
-
-        Communication lastJobContainerCommunication = new Communication();
-
-        long lastReportTimeStamp = System.currentTimeMillis();
-        try {
-            while (true) {
-                /**
-                 * step 1: collect job stat
-                 * step 2: getReport info, then report it
-                 * step 3: errorLimit do check
-                 * step 4: dealSucceedStat();
-                 * step 5: dealKillingStat();
-                 * step 6: dealFailedStat();
-                 * step 7: refresh last job stat, and then sleep for next while
-                 *
-                 * above steps, some ones should report info to DS
-                 *
-                 */
-                Communication nowJobContainerCommunication = this.containerCommunicator.collect();
-                nowJobContainerCommunication.setTimestamp(System.currentTimeMillis());
-                LOG.debug(nowJobContainerCommunication.toString());
-
-                //汇报周期
-                long now = System.currentTimeMillis();
-                if (now - lastReportTimeStamp > jobReportIntervalInMillSec) {
-                    Communication reportCommunication = CommunicationTool
-                            .getReportCommunication(nowJobContainerCommunication, lastJobContainerCommunication, totalTasks);
-
-                    this.containerCommunicator.report(reportCommunication);
-                    lastReportTimeStamp = now;
-                    lastJobContainerCommunication = nowJobContainerCommunication;
-                }
-
-
-                if (nowJobContainerCommunication.getState() == State.SUCCEEDED) {
-                    LOG.info("Scheduler accomplished all tasks.");
-                    break;
-                }
-
-                if (isJobKilling(this.getJobId())) {
-                    dealKillingStat(this.containerCommunicator, totalTasks);
-                } else if (nowJobContainerCommunication.getState() == State.FAILED) {
-                    dealFailedStat(this.containerCommunicator, nowJobContainerCommunication.getThrowable());
-                }
-
-                Thread.sleep(jobSleepIntervalInMillSec);
-            }
-        } catch (InterruptedException e) {
-            // 以 failed 状态退出
-            LOG.error("捕获到InterruptedException异常!", e);
-
-            throw DataETLException.asDataETLException(
-                    FrameworkErrorCode.RUNTIME_ERROR, e);
-        }
-
+        startAllTaskGroup(configurations,this.getContainerCommunicator().getCollector().getTGCommunicationManager());
     }
 
-    protected abstract void startAllTaskGroup(List<Configuration> configurations);
+    protected abstract void startAllTaskGroup(List<Configuration> configurations, LocalTGCommunicationManager tgCommunicationManager);
 
     protected abstract void dealFailedStat(AbstractContainerCommunicator frameworkCollector, Throwable throwable);
 

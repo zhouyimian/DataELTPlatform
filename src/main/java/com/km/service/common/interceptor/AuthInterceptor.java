@@ -46,7 +46,7 @@ public class AuthInterceptor  implements HandlerInterceptor {
 
             Object loginStatus = redisutil.get(token);
             if(Objects.isNull(loginStatus)){
-                response.getWriter().print("token错误，请查看！");
+                response.getWriter().print("token过期请重新登录");
                 return false;
             }
             JSONObject object = JSONObject.parseObject(redisutil.get(token));

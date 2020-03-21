@@ -14,7 +14,7 @@ public interface ProcessMapper {
     @Select({"select * from process where processId = #{processId}"})
     public Process getProcessByProcessId(@Param("processId") String processId);
 
-    @Select({"SELECT p.processId,p.processName,u.username,p.processContent,p.state,p.updateTime,p.runningJobCount FROM PROCESS p,USER u WHERE p.userId = u.userId ORDER BY updateTime DESC limit #{start},#{count} "})
+    @Select({"SELECT p.processId,p.processName,u.username,p.processContent,p.state,p.updateTime,p.runningJobCount FROM process p,user u WHERE p.userId = u.userId ORDER BY updateTime DESC limit #{start},#{count} "})
     public List<ProcessUseridDto> getAllProcess(@Param("start") int start, @Param("count") int count);
 
 

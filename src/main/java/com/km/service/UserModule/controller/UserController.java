@@ -8,6 +8,7 @@ import com.km.service.common.UnAuthToken;
 import com.km.service.common.exception.serviceException;
 import com.km.service.common.utils.MD5Utils;
 import com.km.service.common.utils.RedisUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +47,7 @@ public class UserController {
 
         JSONObject message = new JSONObject();
         message.put("token",token);
-        message.put("nickname",null==user.getNickName()?username:user.getNickName());
+        message.put("nickname", StringUtils.isBlank(user.getNickName())?username:user.getNickName());
         return JSONObject.toJSON(message);
     }
 

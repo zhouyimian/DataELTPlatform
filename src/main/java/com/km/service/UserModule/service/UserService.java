@@ -16,7 +16,7 @@ public class UserService {
     }
 
     public void register(String userid,String username,String password){
-        userMapper.register(userid,username,password);
+        userMapper.register(userid,username,password,"");
     }
 
     public User findUserByUserName(String username) {

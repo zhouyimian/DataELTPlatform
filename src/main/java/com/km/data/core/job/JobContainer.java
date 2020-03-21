@@ -6,8 +6,8 @@ import com.km.data.common.exception.CommonErrorCode;
 import com.km.data.common.exception.DataETLException;
 import com.km.data.common.util.Configuration;
 import com.km.data.core.AbstractContainer;
-import com.km.data.core.job.scheduler.AbstractScheduler;
-import com.km.data.core.job.scheduler.processinner.StandAloneScheduler;
+import com.km.data.core.job.meta.ExecuteMode;
+import com.km.data.core.job.scheduler.StandAloneScheduler;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.km.data.core.util.FrameworkErrorCode;
@@ -23,9 +23,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * job实例运行在jobContainer容器中，它是所有任务的master，负责初始化、拆分、调度、运行、回收、监控和汇报
@@ -71,6 +68,7 @@ public class JobContainer extends AbstractContainer {
             LOG.debug("jobContainer starts to do post ...");
             this.post();
             this.destory();
+            //this.getContainerCommunicator().getCollector().getTGCommunicationManager()
         } catch (Throwable e) {
             LOG.error("Exception when job run", e);
 
@@ -177,6 +175,7 @@ public class JobContainer extends AbstractContainer {
     }
 
     public void schedule() {
+
         int channelsPerTaskGroup = this.configuration.getInt(
                 CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_CHANNEL, 5);
         int taskNumber = this.configuration.getList(

@@ -23,6 +23,7 @@ public class TaskGroupContainerRunner implements Runnable {
                     String.format("taskGroup-%d", this.taskGroupContainer.getTaskGroupId()));
             this.taskGroupContainer.start();
 			this.state = State.SUCCEEDED;
+
 		} catch (Throwable e) {
 			this.state = State.FAILED;
 			throw DataETLException.asDataETLException(

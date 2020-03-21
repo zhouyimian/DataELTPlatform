@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 public class ProcessController {
@@ -120,6 +117,33 @@ public class ProcessController {
         message.put("message","导入流程成功");
         return JSONObject.toJSON(message);
     }
+
+
+    @RequestMapping(value = "/copyProcess", method = RequestMethod.POST)
+    public Object copyProcess(HttpServletRequest req) {
+        String processId = req.getParameter("processId");
+        String newProcessName = req.getParameter("newProcessName");
+        User user = (User) req.getAttribute("user");
+        Process process = processService.getProcessByProcessId(processId);
+        processService.addProcess(newProcessName,process.getProcessContent(),user.getUserId());
+        JSONObject message = new JSONObject();
+        message.put("message","复制流程成功");
+        return JSONObject.toJSON(message);
+    }
+
+
+    @RequestMapping(value = "/batchDeleteProcess", method = RequestMethod.POST)
+    public Object batchDeleteProcess(HttpServletRequest req) {
+        List<String> processIds = Collections.singletonList(req.getParameter("processIds"));
+        for(String processId:processIds) {
+            processService.deleteProcess(processId);
+        }
+        JSONObject message = new JSONObject();
+        message.put("message","批量删除流程成功");
+        return JSONObject.toJSON(message);
+    }
+
+
 
     private Object parseMap(Map<String, Configuration> configurationMap) {
         JSONArray array = new JSONArray();

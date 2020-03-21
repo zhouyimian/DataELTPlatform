@@ -19,21 +19,21 @@ public class TaskRunner implements Runnable {
     Configuration configuration;
     Reader.Task reader;
     Writer.Task writer;
-    CountDownLatch countDownLatch;
+    //CountDownLatch countDownLatch;
 
     Channel channel;
 
 
-    public TaskRunner(Configuration configuration,CountDownLatch countDownLatch) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public TaskRunner(Configuration configuration) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         this.configuration = configuration;
         this.reader = createReader(configuration);
         this.writer = createWriter(configuration);
         this.channel = createChannel();
-        this.countDownLatch = countDownLatch;
+        //this.countDownLatch = countDownLatch;
     }
 
     private Channel createChannel() {
-        return new MemoryChannel();
+        return new MemoryChannel(this.configuration);
     }
 
     private Reader.Task createReader(Configuration configuration) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -57,7 +57,7 @@ public class TaskRunner implements Runnable {
         } catch (SQLException | ClassNotFoundException | IllegalAccessException | NoSuchMethodException | NoSuchFieldException | InvocationTargetException | InstantiationException e) {
             e.printStackTrace();
         } finally {
-            countDownLatch.countDown();
+            //countDownLatch.countDown();
         }
     }
 

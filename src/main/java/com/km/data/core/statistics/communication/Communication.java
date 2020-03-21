@@ -48,10 +48,10 @@ public class Communication implements Cloneable {
     }
 
     private void init() {
-        this.counter = new ConcurrentHashMap<String, Number>();
+        this.counter = new ConcurrentHashMap<>();
         this.state = State.RUNNING;
         this.throwable = null;
-        this.message = new ConcurrentHashMap<String, List<String>>();
+        this.message = new ConcurrentHashMap<>();
         this.timestamp = System.currentTimeMillis();
     }
 

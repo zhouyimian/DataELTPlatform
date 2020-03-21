@@ -53,11 +53,12 @@ public class DefaultRecord implements Record {
 
     @Override
     public Object getColumnValue(String columnName) {
-	    Integer index = columnNameToIndex.get(columnName);
-	    if(index==null)
-	        return null;
-	    return columns.get(index).getRawData();
+        Integer index = columnNameToIndex.get(columnName);
+        if(index==null)
+            return null;
+        return columns.get(index).getRawData();
     }
+
 
     @Override
 	public void setColumn(int i, final Column column) {
@@ -142,7 +143,4 @@ public class DefaultRecord implements Record {
 			this.columns.add(null);
 		}
 	}
-
-
-
 }

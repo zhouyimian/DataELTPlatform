@@ -7,16 +7,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class LocalTGCommunicationManager {
+public class LocalTGCommunicationManager {
     private static Map<Integer, Communication> taskGroupCommunicationMap =
             new ConcurrentHashMap<Integer, Communication>();
 
-    public static void registerTaskGroupCommunication(
+    public void registerTaskGroupCommunication(
             int taskGroupId, Communication communication) {
         taskGroupCommunicationMap.put(taskGroupId, communication);
     }
 
-    public static Communication getJobCommunication() {
+    public Communication getJobCommunication() {
         Communication communication = new Communication();
         communication.setState(State.SUCCEEDED);
 
@@ -35,16 +35,16 @@ public final class LocalTGCommunicationManager {
      *
      * @return
      */
-    public static Set<Integer> getTaskGroupIdSet() {
+    public Set<Integer> getTaskGroupIdSet() {
         return taskGroupCommunicationMap.keySet();
     }
 
-    public static Communication getTaskGroupCommunication(int taskGroupId) {
+    public Communication getTaskGroupCommunication(int taskGroupId) {
         Validate.isTrue(taskGroupId >= 0, "taskGroupId不能小于0");
         return taskGroupCommunicationMap.get(taskGroupId);
     }
 
-    public static void updateTaskGroupCommunication(final int taskGroupId,
+    public void updateTaskGroupCommunication(final int taskGroupId,
                                                     final Communication communication) {
         Validate.isTrue(taskGroupCommunicationMap.containsKey(
                 taskGroupId), String.format("taskGroupCommunicationMap中没有注册taskGroupId[%d]的Communication，" +
@@ -52,11 +52,11 @@ public final class LocalTGCommunicationManager {
         taskGroupCommunicationMap.put(taskGroupId, communication);
     }
 
-    public static void clear() {
+    public void clear() {
         taskGroupCommunicationMap.clear();
     }
 
-    public static Map<Integer, Communication> getTaskGroupCommunicationMap() {
+    public Map<Integer, Communication> getTaskGroupCommunicationMap() {
         return taskGroupCommunicationMap;
     }
 }

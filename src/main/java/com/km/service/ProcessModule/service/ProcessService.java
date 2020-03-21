@@ -35,7 +35,7 @@ public class ProcessService {
 
     public void deleteProcess(String processId) {
         Process process = processMapper.getProcessByProcessId(processId);
-        if(process.getRunningJobCount()!=0){
+        if(process!=null&&process.getRunningJobCount()!=0){
             throw new serviceException("目前有正在运行的任务绑定着该流程，无法删除");
         }
         processMapper.deleteProcess(processId);
