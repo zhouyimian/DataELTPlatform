@@ -1,5 +1,6 @@
 package com.km.service.DeploymentModule.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.ConfigureModule.service.ConfigureService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -53,31 +55,23 @@ public class DeploymentController {
         JSONObject message = new JSONObject();
         Conf sourceConf = configureService.getConfigureByconfigureId(deployment.getSourceConfigureId());
         Conf targetConf = configureService.getConfigureByconfigureId(deployment.getTargetConfigureId());
-        List<Process> processList = processService.getProcessList(deployment.getProcessIds());
-        StringBuilder processNames = new StringBuilder();
-        if(processList.size()==1){
-            processNames.append(processList.get(0).getProcessName());
-        }else{
-            for(int i = 0;i<processList.size();i++){
-                if(i!=processList.size()-1){
-                    processNames.append(processList.get(i).getProcessName()+"\t");
-                }else{
-                    processNames.append(processList.get(i).getProcessName());
-                }
-            }
+        JSONArray processIds = JSONArray.parseArray(deployment.getProcessIds());
+        JSONArray processNames = new JSONArray();
+        for(int i = 0;i<processIds.size();i++){
+            String processId = processIds.get(i).toString();
+            processNames.add(processService.getProcessByProcessId(processId).getProcessName());
         }
-
         message.put("deploymentId",deploymentId);
         message.put("deploymentName",deployment.getDeploymentName());
         message.put("userId",deployment.getUserId());
         message.put("state",deployment.getState());
         message.put("updateTime",deployment.getUpdateTime());
-        message.put("configureId",deployment.getUserId());
+        message.put("sourceConfigureId",sourceConf.getConfigureId());
+        message.put("targetConfigureId",targetConf.getConfigureId());
         message.put("sourceConfigureName",sourceConf.getConfigureName());
         message.put("targetConfigureName",targetConf.getConfigureName());
-        message.put("processIds",deployment.getProcessIds());
-        message.put("processNames",processNames.toString());
-
+        message.put("processIds",processIds);
+        message.put("processNames",processNames);
         return JSONObject.toJSON(message);
     }
 
@@ -101,6 +95,18 @@ public class DeploymentController {
         deploymentService.deleteDeployment(deploymentId);
         JSONObject message = new JSONObject();
         message.put("message","删除部署成功");
+        return JSONObject.toJSON(message);
+    }
+
+    @RequestMapping(value = "/batchDeleteDeployment", method = RequestMethod.POST)
+    public Object batchDeleteDeployment(HttpServletRequest req) {
+        String ids = req.getParameter("deploymentIds");
+        JSONArray deploymentIds = JSONArray.parseArray(ids);
+        for(int i = 0;i<deploymentIds.size();i++) {
+            deploymentService.deleteDeployment(deploymentIds.get(i).toString());
+        }
+        JSONObject message = new JSONObject();
+        message.put("message","批量删除部署成功");
         return JSONObject.toJSON(message);
     }
 

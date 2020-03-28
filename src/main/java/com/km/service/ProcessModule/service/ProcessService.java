@@ -62,12 +62,4 @@ public class ProcessService {
         return processMapper.getProcessCount();
     }
 
-    public List<Process> getProcessList(String processIds) {
-        List<Process> processes = new ArrayList<>();
-        String[] ids = processIds.split("\t");
-        for(String id:ids){
-            processes.add(processMapper.getProcessByProcessId(id));
-        }
-        return processes;
-    }
 }

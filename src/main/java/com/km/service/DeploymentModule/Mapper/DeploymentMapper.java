@@ -14,7 +14,7 @@ public interface DeploymentMapper {
     @Select({"select * from deployment where deploymentId = #{deploymentId}"})
     public Deployment getDeploymentBydeployId(@Param("deploymentId") String deploymentId);
 
-    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d,targetConfigureId,d.processIds,d.state,d.updateTime FROM deployment d,user u WHERE d.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
+    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processIds,d.state,d.updateTime FROM deployment d,user u WHERE d.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
     public List<DeploymentUseridDto> getAllDeployments(@Param("start") int start, @Param("count") int count);
 
 

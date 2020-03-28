@@ -70,6 +70,18 @@ public class ConfigureController {
         return JSONObject.toJSON(message);
     }
 
+    @RequestMapping(value = "/batchDeleteConfigure", method = RequestMethod.POST)
+    public Object batchDeleteConfigure(HttpServletRequest req) {
+        String ids = req.getParameter("configureIds");
+        JSONArray configureIds = JSONArray.parseArray(ids);
+        for(int i = 0;i<configureIds.size();i++) {
+            configureService.deleteConfigure(configureIds.get(i).toString());
+        }
+        JSONObject message = new JSONObject();
+        message.put("message","批量删除配置文件成功");
+        return JSONObject.toJSON(message);
+    }
+
     @RequestMapping(value = "/updateConfigure", method = RequestMethod.POST)
     public Object updateConfigure(HttpServletRequest req) {
         String configureId = req.getParameter("configureId");
