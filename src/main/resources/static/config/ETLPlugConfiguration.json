@@ -2,6 +2,7 @@
   "ETLplugins": [
     {
       "pluginName": "filterNullValuePlugin",
+      "showName":"空值过滤插件",
       "classPath": "com.km.data.plugin.filterNullValuePlugin"
     }
   ]

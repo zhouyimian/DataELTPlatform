@@ -2,18 +2,22 @@
   "reader":[
     {
       "name":"streamreader",
+      "showName":"Stream",
       "classPath":"com.km.data.reader.StreamReader"
     },
     {
       "name":"hdfsreader",
+      "showName":"HDFS",
       "classPath":"com.km.data.reader.HdfsReader"
     },
     {
       "name":"mongodbreader",
+      "showName":"MongoDB",
       "classPath":"com.km.data.reader.MongoDBReader"
     },
     {
       "name":"mysqlreader",
+      "showName":"MySQL",
       "classPath":"com.km.data.reader.MysqlReader"
     }
   ]

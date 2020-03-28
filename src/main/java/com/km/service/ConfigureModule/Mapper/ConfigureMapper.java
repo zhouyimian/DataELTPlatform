@@ -2,8 +2,6 @@ package com.km.service.ConfigureModule.Mapper;
 
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.ConfigureModule.dto.ConfUseridDto;
-import com.km.service.ProcessModule.domain.Process;
-import com.km.service.ProcessModule.dto.ProcessUseridDto;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +13,7 @@ public interface ConfigureMapper {
     @Select({"select * from conf where configureId = #{configureId}"})
     public Conf getConfigureByconfigureId(@Param("configureId") String configureId);
 
-    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.state,c.updateTime,c.runningJobCount FROM conf c,USER u WHERE c.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
+    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.state,c.updateTime,c.runningJobCount FROM conf c,user u WHERE c.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
     public List<ConfUseridDto> getAllConfigures(@Param("start") int start, @Param("count") int count);
 
 

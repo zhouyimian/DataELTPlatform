@@ -11,12 +11,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 
 public abstract class Channel {
+    public Long totalBytes = 0L;
     protected int byteCapacity;
     protected volatile boolean isClosed = false;
-    protected Configuration configuration = null;
-    private Communication currentCommunication;
+    protected Configuration configuration;
 
-    private Communication lastCommunication = new Communication();
 
 
     public Channel(final Configuration configuration) {
@@ -62,4 +61,12 @@ public abstract class Channel {
     public abstract Record remove(int index);
 
     public abstract Record remove();
+
+    public Long getTotalBytes() {
+        return totalBytes;
+    }
+
+    public void setTotalBytes(Long totalBytes) {
+        this.totalBytes = totalBytes;
+    }
 }

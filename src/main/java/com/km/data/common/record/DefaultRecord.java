@@ -26,8 +26,6 @@ public class DefaultRecord implements Record {
 
 	private Map<String,Integer> columnNameToIndex;
 
-	// 首先是Record本身需要的内存
-	private int memorySize = ClassSize.DefaultRecordHead;
 
 	public DefaultRecord() {
 		this.columns = new ArrayList<Column>(RECORD_AVERGAE_COLUMN_NUMBER);
@@ -107,37 +105,25 @@ public class DefaultRecord implements Record {
 		return byteSize;
 	}
 
-	public int getMemorySize(){
-		return memorySize;
-	}
 
 	private void decrByteSize(final Column column) {
 		if (null == column) {
 			return;
 		}
-
 		byteSize -= column.getByteSize();
-
-		//内存的占用是column对象的头 再加实际大小
-		memorySize = memorySize -  ClassSize.ColumnHead - column.getByteSize();
 	}
 
 	private void incrByteSize(final Column column) {
 		if (null == column) {
 			return;
 		}
-
 		byteSize += column.getByteSize();
-
-		//内存的占用是column对象的头 再加实际大小
-		memorySize = memorySize + ClassSize.ColumnHead + column.getByteSize();
 	}
 
 	private void expandCapacity(int totalSize) {
 		if (totalSize <= 0) {
 			return;
 		}
-
 		int needToExpand = totalSize - columns.size();
 		while (needToExpand-- > 0) {
 			this.columns.add(null);

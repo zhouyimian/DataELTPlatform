@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class testStart {
@@ -30,6 +31,8 @@ public class testStart {
 
         Engine engine = new Engine();
         engine.start(new Configuration(mergeConfig.toJSONString()));
+
+        HashMap<String,String> map = new HashMap<>();
 
     }
 

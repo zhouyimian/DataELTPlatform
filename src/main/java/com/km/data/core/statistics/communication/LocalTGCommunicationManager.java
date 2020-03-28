@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalTGCommunicationManager {
     private static Map<Integer, Communication> taskGroupCommunicationMap =
-            new ConcurrentHashMap<Integer, Communication>();
+            new ConcurrentHashMap<>();
 
     public void registerTaskGroupCommunication(
             int taskGroupId, Communication communication) {

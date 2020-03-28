@@ -50,7 +50,7 @@ public class ProcessService {
     }
 
     public Process getProcessByProcessId(String processId) {
-        return processMapper.getProcessByProcessId(processId);
+        return  processMapper.getProcessByProcessId(processId);
     }
 
     public List<ProcessUseridDto> getAllProcess(int pageSize, int pageNumber) {

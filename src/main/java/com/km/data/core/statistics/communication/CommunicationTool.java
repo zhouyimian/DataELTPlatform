@@ -30,13 +30,17 @@ public final class CommunicationTool {
     public static final String WRITE_FAILED_BYTES = "writeFailedBytes";
 
     public static final String TOTAL_READ_RECORDS = "totalReadRecords";
-    private static final String TOTAL_READ_BYTES = "totalReadBytes";
+    public static final String TOTAL_READ_BYTES = "totalReadBytes";
 
-    private static final String TOTAL_ERROR_RECORDS = "totalErrorRecords";
-    private static final String TOTAL_ERROR_BYTES = "totalErrorBytes";
+    public static final String TOTAL_ETL_RECORDS = "totalETLRecords";
+    public static final String TOTAL_TASK_NUMBERS = "totalTasks";
+    public static final String DONE_TASK_NUMBERS = "finishTasks";
 
-    private static final String WRITE_SUCCEED_RECORDS = "writeSucceedRecords";
-    private static final String WRITE_SUCCEED_BYTES = "writeSucceedBytes";
+    public static final String TOTAL_ERROR_RECORDS = "totalErrorRecords";
+    public static final String TOTAL_ERROR_BYTES = "totalErrorBytes";
+
+    public static final String WRITE_SUCCEED_RECORDS = "writeSucceedRecords";
+    public static final String WRITE_SUCCEED_BYTES = "writeSucceedBytes";
 
     public static final String WAIT_WRITER_TIME = "waitWriterTime";
 
@@ -54,12 +58,6 @@ public final class CommunicationTool {
 
         long totalReadRecords = getTotalReadRecords(now);
         long totalReadBytes = getTotalReadBytes(now);
-        now.setLongCounter(TOTAL_READ_RECORDS, totalReadRecords);
-        now.setLongCounter(TOTAL_READ_BYTES, totalReadBytes);
-        now.setLongCounter(TOTAL_ERROR_RECORDS, getTotalErrorRecords(now));
-        now.setLongCounter(TOTAL_ERROR_BYTES, getTotalErrorBytes(now));
-        now.setLongCounter(WRITE_SUCCEED_RECORDS, getWriteSucceedRecords(now));
-        now.setLongCounter(WRITE_SUCCEED_BYTES, getWriteSucceedBytes(now));
 
         long timeInterval = now.getTimestamp() - old.getTimestamp();
         long sec = timeInterval <= 1000 ? 1 : timeInterval / 1000;
@@ -70,7 +68,6 @@ public final class CommunicationTool {
 
         now.setLongCounter(BYTE_SPEED, bytesSpeed < 0 ? 0 : bytesSpeed);
         now.setLongCounter(RECORD_SPEED, recordsSpeed < 0 ? 0 : recordsSpeed);
-        now.setDoubleCounter(PERCENTAGE, now.getLongCounter(STAGE) / (double) totalStage);
 
         if (old.getThrowable() != null) {
             now.setThrowable(old.getThrowable());

@@ -15,10 +15,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * 内存Channel的具体实现，底层其实是一个ArrayList
  */
 public class MemoryChannel extends Channel {
-    private int bufferSize = 0;
 
 
-    private List<Record> list = null;
+    private List<Record> list;
 
     public MemoryChannel(Configuration configuration) {
         super(configuration);
@@ -28,6 +27,7 @@ public class MemoryChannel extends Channel {
     @Override
     public void add(Record record) {
         this.list.add(record);
+        this.totalBytes+=record.getByteSize();
     }
 
     @Override
@@ -45,8 +45,11 @@ public class MemoryChannel extends Channel {
     @Override
     public Record remove(int index) {
         Record record = null;
-        if(index<list.size()&&index>=0)
+        if(index<list.size()&&index>=0) {
             record = list.remove(index);
+            this.totalBytes-=record.getByteSize();
+        }
+
         return record;
     }
 

@@ -65,7 +65,8 @@ public class ProcessController {
     @RequestMapping(value = "/addProcess", method = RequestMethod.POST)
     public Object addProcess(HttpServletRequest req) {
         String processName = req.getParameter("processName");
-        String processContent = req.getParameter("processContent");
+        String content = req.getParameter("processContent");
+        String processContent = JSONObject.parseArray(content).toString();
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
         processService.addProcess(processName,processContent,userId);
@@ -87,7 +88,8 @@ public class ProcessController {
     public Object updateProcess(HttpServletRequest req) {
         String processId = req.getParameter("processId");
         String processName = req.getParameter("processName");
-        String processContent = req.getParameter("processContent");
+        String content = req.getParameter("processContent");
+        String processContent = JSONObject.parseArray(content).toString();
         processService.updateProcess(processId,processName,processContent);
         JSONObject message = new JSONObject();
         message.put("message","更新流程成功");
@@ -96,23 +98,33 @@ public class ProcessController {
 
     @RequestMapping(value = "/exportProcess", method = RequestMethod.POST)
     public Object exportProcess(HttpServletRequest req) {
-        String processId = req.getParameter("processId");
-        Process process = processService.getProcessByProcessId(processId);
-        JSONObject message = new JSONObject();
-        if(null!=message) {
+        String ids = req.getParameter("processIds");
+        JSONArray processIds = JSONArray.parseArray(ids);
+        JSONArray processJSONArray = new JSONArray();
+        for(int i = 0;i<processIds.size();i++){
+            Process process = processService.getProcessByProcessId(processIds.get(i).toString());
+            JSONObject message = new JSONObject();
             message.put("processName", process.getProcessName());
             message.put("processContent", process.getProcessContent());
+            processJSONArray.add(message);
         }
+        JSONObject message = new JSONObject();
+        message.put("contents",processJSONArray.toJSONString());
         return JSONObject.toJSON(message);
     }
 
     @RequestMapping(value = "/importProcess", method = RequestMethod.POST)
     public Object importProcess(HttpServletRequest req) {
-        String processName = req.getParameter("processName");
-        String processContent = req.getParameter("processContent");
+        String contents = req.getParameter("processes");
+        JSONArray processContents = JSONArray.parseArray(contents);
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
-        processService.addProcess(processName,processContent,userId);
+        for(int i = 0;i<processContents.size();i++){
+            JSONObject oneProcess = processContents.getJSONObject(i);
+            String processName = oneProcess.getString("processName");
+            String processContent = oneProcess.getString("processContent");
+            processService.addProcess(processName,processContent,userId);
+        }
         JSONObject message = new JSONObject();
         message.put("message","导入流程成功");
         return JSONObject.toJSON(message);
@@ -134,9 +146,10 @@ public class ProcessController {
 
     @RequestMapping(value = "/batchDeleteProcess", method = RequestMethod.POST)
     public Object batchDeleteProcess(HttpServletRequest req) {
-        List<String> processIds = Collections.singletonList(req.getParameter("processIds"));
-        for(String processId:processIds) {
-            processService.deleteProcess(processId);
+        String ids = req.getParameter("processIds");
+        JSONArray processIds = JSONArray.parseArray(ids);
+        for(int i = 0;i<processIds.size();i++) {
+            processService.deleteProcess(processIds.get(i).toString());
         }
         JSONObject message = new JSONObject();
         message.put("message","批量删除流程成功");

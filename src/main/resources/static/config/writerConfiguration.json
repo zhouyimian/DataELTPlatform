@@ -2,18 +2,22 @@
   "writer":[
     {
       "name":"streamwriter",
+      "showName":"Stream",
       "classPath":"com.km.data.writer.StreamWriter"
     },
     {
       "name":"hdfswriter",
+      "showName":"HDFS",
       "classPath":"com.km.data.writer.HdfsWriter"
     },
     {
       "name":"mongodbwriter",
+      "showName":"MongoDB",
       "classPath":"com.km.data.writer.MongoDBWriter"
     },
     {
       "name":"mysqlwriter",
+      "showName":"MySQL",
       "classPath":"com.km.data.writer.MysqlWriter"
     }
   ]

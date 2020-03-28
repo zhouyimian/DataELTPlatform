@@ -23,7 +23,7 @@ public interface ProcessMapper {
     public void addProcess(@Param("process")Process process);
 
 
-    @Update({"update Process set processName=#{process.processName}," +
+    @Update({"update process set processName=#{process.processName}," +
             "processContent=#{process.processContent},state=#{process.state}," +
             "updateTime=#{process.updateTime},runningJobCount=#{process.runningJobCount} " +
             "where processId = #{process.processId}"})

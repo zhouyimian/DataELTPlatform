@@ -6,8 +6,8 @@ import com.km.data.common.exception.CommonErrorCode;
 import com.km.data.common.exception.DataETLException;
 import com.km.data.common.util.Configuration;
 import com.km.data.core.AbstractContainer;
-import com.km.data.core.job.meta.ExecuteMode;
 import com.km.data.core.job.scheduler.StandAloneScheduler;
+import com.km.data.core.statistics.communication.Communication;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.km.data.core.util.FrameworkErrorCode;
@@ -18,6 +18,7 @@ import com.km.data.writer.Writer;
 import com.km.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.km.data.core.statistics.communication.CommunicationTool;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -47,6 +48,8 @@ public class JobContainer extends AbstractContainer {
 
     private Integer needChannelNumber;
 
+    private int taskNumber;
+
 
     public JobContainer(Configuration configuration) {
         super(configuration);
@@ -66,6 +69,15 @@ public class JobContainer extends AbstractContainer {
             LOG.info("jobContainer starts to do schedule ...");
             this.schedule();
             LOG.debug("jobContainer starts to do post ...");
+            while (true){
+                Communication communication = this.getContainerCommunicator().collect();
+                if(communication.getCounter().size()!=1){
+                    System.out.println(6);
+                }
+                if(communication==null)
+                    break;
+            }
+
             this.post();
             this.destory();
             //this.getContainerCommunicator().getCollector().getTGCommunicationManager()
@@ -154,7 +166,7 @@ public class JobContainer extends AbstractContainer {
         //底层的split得自己去实现
         List<Configuration> readerTaskConfigs = this
                 .doReaderSplit(this.needChannelNumber);
-        int taskNumber = readerTaskConfigs.size();
+        this.taskNumber = readerTaskConfigs.size();
         List<Configuration> writerTaskConfigs = this
                 .doWriterSplit(taskNumber);
 
@@ -183,7 +195,6 @@ public class JobContainer extends AbstractContainer {
         this.needChannelNumber = Math.min(this.needChannelNumber, taskNumber);
         List<Configuration> taskGroupConfigs = JobAssignUtil.assignFairly(this.configuration,
                 this.needChannelNumber, channelsPerTaskGroup);
-
         try {
             StandAloneScheduler scheduler = initStandaloneScheduler(this.configuration);
             scheduler.schedule(taskGroupConfigs);
