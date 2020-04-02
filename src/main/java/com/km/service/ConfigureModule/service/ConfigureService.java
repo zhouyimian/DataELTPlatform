@@ -30,7 +30,7 @@ public class ConfigureService {
         return configureMapper.getConfigureByconfigureId(configureId);
     }
 
-    public void addConfigure(String configureType,String configureName, String configureContent, String userId) {
+    public void addConfigure(String configureType,String configureName, String configureContent,String configureStruct,String userId) {
         String state = "停止";
         String confId = UUID.randomUUID().toString().replace("-","");
         Date nowDate = new Date();
@@ -43,22 +43,27 @@ public class ConfigureService {
         conf.setUserId(userId);
         conf.setConfigureName(configureName);
         conf.setRunningJobCount(0);
+        conf.setConfigureStruct(configureStruct);
         configureMapper.addConfigure(conf);
     }
 
     public void deleteConfigure(String configureId) {
         Conf conf = configureMapper.getConfigureByconfigureId(configureId);
-        if(conf.getRunningJobCount()!=0){
+        if(conf!=null&&conf.getRunningJobCount()!=0){
             throw new serviceException("目前有正在运行的任务绑定着该配置文件，无法删除");
         }
         configureMapper.deleteConfigure(configureId);
     }
 
-    public void updateConfigure(String configureId, String configureName, String configureContent) {
+    public void updateConfigure(String configureId, String configureName, String configureContent,String configureStruct) {
         Conf conf = configureMapper.getConfigureByconfigureId(configureId);
+        if(conf!=null&&conf.getRunningJobCount()!=0){
+            throw new serviceException("目前有正在运行的任务绑定着该配置文件，无法更新");
+        }
         conf.setConfigureName(configureName);
         conf.setUpdateTime(new Date());
         conf.setConfigureContent(configureContent);
+        conf.setConfigureStruct(configureStruct);
         configureMapper.updateConfigure(conf);
     }
 }

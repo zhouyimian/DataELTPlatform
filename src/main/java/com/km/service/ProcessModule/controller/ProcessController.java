@@ -96,6 +96,11 @@ public class ProcessController {
         return JSONObject.toJSON(message);
     }
 
+    /**
+     * 导出流程
+     * @param req
+     * @return
+     */
     @RequestMapping(value = "/exportProcess", method = RequestMethod.POST)
     public Object exportProcess(HttpServletRequest req) {
         String ids = req.getParameter("processIds");
@@ -113,6 +118,11 @@ public class ProcessController {
         return JSONObject.toJSON(message);
     }
 
+    /**
+     * 导入流程
+     * @param req
+     * @return
+     */
     @RequestMapping(value = "/importProcess", method = RequestMethod.POST)
     public Object importProcess(HttpServletRequest req) {
         String contents = req.getParameter("processes");

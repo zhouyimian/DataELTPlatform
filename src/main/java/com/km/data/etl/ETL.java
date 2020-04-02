@@ -9,10 +9,11 @@ import com.km.data.plugin.Plugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 
 public class ETL {
 
-    public static void process(Channel channel, Configuration configuration) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchFieldException {
+    public static void process(Channel channel, Configuration configuration) throws Exception {
 
         JSONArray classAndParameters = JSONArray.parseArray(configuration.toJSON());
 
@@ -22,7 +23,7 @@ public class ETL {
         }
     }
 
-    private static void processRecord(Channel channel, JSONObject oneClassAndParameter,Configuration configuration) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchFieldException {
+    private static void processRecord(Channel channel, JSONObject oneClassAndParameter,Configuration configuration) throws Exception {
         String classPath = oneClassAndParameter.getString(Key.PLUGIN_CLASSPATH);
         JSONArray parameters = oneClassAndParameter.getJSONArray(Key.PLUGIN_PARAMETER);
         Plugin plugin = (Plugin) Class.forName(classPath).getConstructor(Configuration.class).newInstance(configuration);
@@ -30,14 +31,14 @@ public class ETL {
         plugin.process(channel);
     }
 
-    private static void inject(Plugin plugin, JSONArray parameters) throws NoSuchFieldException, IllegalAccessException {
-        for(Object parameter:parameters){
-            JSONObject object = (JSONObject) parameter;
-            String fieldName = object.getString(Key.FIELD);
-            String value = object.getString(Key.VALUE);
-            Field field = plugin.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(plugin,value);
+    private static void inject(Plugin plugin, JSONArray parameters) throws Exception {
+        for(int i = 0;i<parameters.size();i++){
+            JSONObject parameter = parameters.getJSONObject(i);
+            for(Map.Entry<String,Object> entry:parameter.entrySet()){
+                Field field = plugin.getClass().getDeclaredField(entry.getKey());
+                field.setAccessible(true);
+                field.set(plugin,entry.getValue().toString());
+            }
         }
     }
 }

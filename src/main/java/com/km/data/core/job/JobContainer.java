@@ -55,6 +55,7 @@ public class JobContainer extends AbstractContainer {
         super(configuration);
     }
 
+
     /**
      * jobContainer主要负责的工作全部在start()里面，包括init、split、scheduler
      */
@@ -69,14 +70,14 @@ public class JobContainer extends AbstractContainer {
             LOG.info("jobContainer starts to do schedule ...");
             this.schedule();
             LOG.debug("jobContainer starts to do post ...");
-            while (true){
-                Communication communication = this.getContainerCommunicator().collect();
-                if(communication.getCounter().size()!=1){
-                    System.out.println(6);
-                }
-                if(communication==null)
-                    break;
-            }
+//            while (true){
+//                Communication communication = this.getContainerCommunicator().collect();
+//                if(communication.getCounter().size()>1){
+//                    Thread.sleep(1000);
+//                }
+//                if(communication==null)
+//                    break;
+//            }
 
             this.post();
             this.destory();
@@ -112,7 +113,7 @@ public class JobContainer extends AbstractContainer {
         String writerPluginClass = null;
 
         for (JSONObject readerPluginConfig : readerPlugins) {
-            if (readerPluginConfig.getString("name").equals(this.readerPluginName)) {
+            if (readerPluginConfig.getString("pluginName").equals(this.readerPluginName)) {
                 readerPluginClass = readerPluginConfig.getString("classPath");
                 break;
             }
@@ -122,7 +123,7 @@ public class JobContainer extends AbstractContainer {
                     "配置的reader[ " + this.readerPluginName + "]不存在，请重新输入reader");
         }
         for (JSONObject writerPluginConfig : writerPlugins) {
-            if (writerPluginConfig.getString("name").equals(this.writerPluginName)) {
+            if (writerPluginConfig.getString("pluginName").equals(this.writerPluginName)) {
                 writerPluginClass = writerPluginConfig.getString("classPath");
                 break;
             }
@@ -276,5 +277,9 @@ public class JobContainer extends AbstractContainer {
     public void destory() {
         this.jobReader.destroy();
         this.jobWriter.destroy();
+    }
+
+    public int getTaskNumber() {
+        return taskNumber;
     }
 }

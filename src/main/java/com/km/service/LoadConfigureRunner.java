@@ -44,9 +44,9 @@ public class LoadConfigureRunner implements CommandLineRunner {
         if (AllReaderOrWriter == null) AllReaderOrWriter = configuration.getList("writer", JSONObject.class);
 
         for (JSONObject parameter : AllReaderOrWriter) {
-            String name = parameter.getString("name");
+            String name = parameter.getString("pluginName");
             if (map.get(name) != null) {
-                throw new serviceException("DataETL平台不允许出现name一样的Reader或者Writer插件！");
+                throw new serviceException("DataETL平台不允许出现pluginName一样的Reader或者Writer插件！");
             } else {
                 map.put(name, Configuration.from(parameter));
             }

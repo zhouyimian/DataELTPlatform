@@ -2,6 +2,8 @@ package com.km.service.DeploymentModule.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.km.data.core.statistics.communication.Communication;
+import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.ConfigureModule.service.ConfigureService;
 import com.km.service.DeploymentModule.domain.Deployment;
@@ -10,6 +12,7 @@ import com.km.service.DeploymentModule.service.DeploymentService;
 import com.km.service.ProcessModule.domain.Process;
 import com.km.service.ProcessModule.service.ProcessService;
 import com.km.service.UserModule.domain.User;
+import com.km.service.common.CommunicateInformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class DeploymentController {
@@ -44,6 +48,7 @@ public class DeploymentController {
         message.put("pageNumber",pageNumber);
         message.put("totalPages",totalPages);
         message.put("deployDesc",list);
+
         return JSONObject.toJSON(message);
     }
 
@@ -55,7 +60,7 @@ public class DeploymentController {
         JSONObject message = new JSONObject();
         Conf sourceConf = configureService.getConfigureByconfigureId(deployment.getSourceConfigureId());
         Conf targetConf = configureService.getConfigureByconfigureId(deployment.getTargetConfigureId());
-        JSONArray processIds = JSONArray.parseArray(deployment.getProcessIds());
+        JSONArray processIds = JSONArray.parseArray(deployment.getProcessId());
         JSONArray processNames = new JSONArray();
         for(int i = 0;i<processIds.size();i++){
             String processId = processIds.get(i).toString();
@@ -80,10 +85,10 @@ public class DeploymentController {
         String deploymentName = req.getParameter("deploymentName");
         String sourceConfigureId = req.getParameter("sourceConfigureId");
         String targetConfigureId = req.getParameter("targetConfigureId");
-        String processIds = req.getParameter("processIds");
+        String processId = req.getParameter("processId");
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
-        deploymentService.addDeployment(deploymentName,sourceConfigureId,targetConfigureId,processIds,userId);
+        deploymentService.addDeployment(deploymentName,sourceConfigureId,targetConfigureId,processId,userId);
         JSONObject message = new JSONObject();
         message.put("message","新增部署成功");
         return JSONObject.toJSON(message);
@@ -116,8 +121,8 @@ public class DeploymentController {
         String deploymentName = req.getParameter("deploymentName");
         String sourceConfigureId = req.getParameter("sourceConfigureId");
         String targetConfigureId = req.getParameter("targetConfigureId");
-        String processIds = req.getParameter("processIds");
-        deploymentService.updateDeployment(deploymentId,deploymentName,sourceConfigureId,targetConfigureId,processIds);
+        String processId = req.getParameter("processId");
+        deploymentService.updateDeployment(deploymentId,deploymentName,sourceConfigureId,targetConfigureId,processId);
         JSONObject message = new JSONObject();
         message.put("message","更新部署成功");
         return JSONObject.toJSON(message);
@@ -140,4 +145,12 @@ public class DeploymentController {
         message.put("message","暂停部署成功");
         return JSONObject.toJSON(message);
     }
+
+    @RequestMapping(value = "/getRunningInformation", method = RequestMethod.POST)
+    public Object getRunningInformation(HttpServletRequest req) {
+        String deploymentId = req.getParameter("deploymentId");
+        JSONObject message = deploymentService.getRunningInformation(deploymentId);
+        return JSONObject.toJSON(message);
+    }
+
 }

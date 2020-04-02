@@ -93,14 +93,14 @@ public class MysqlWriter extends Writer {
             this.resultSetMetaData = DBUtil.getColumnMetaData(connection,
                     this.table, StringUtils.join(this.columns, ","));
 
-            Record record = null;
+            Record record;
             while ((record=channel.remove())!=null){
                 try {
                     pstmt = WriterUtil.fillPreparedStatement(
                             pstmt, record,this.columns.size(),resultSetMetaData);
                     pstmt.execute();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    throw e;
                 }
 
             }

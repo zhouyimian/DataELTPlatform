@@ -12,15 +12,13 @@
           "username": "root",
           "password": "313976009",
           "column": [
-            "time",
-            "uid",
-            "username",
-            "password"
+            "*"
           ],
+          "splitPk": "uid",
           "connection": {
-              "table": "user",
-              "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT"
-            }
+            "table": "user",
+            "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT"
+          }
         }
       },
       "writer": {
@@ -29,39 +27,33 @@
           "username": "root",
           "password": "313976009",
           "column": [
-            "time",
             "uid",
             "username",
-            "password"
+            "password",
+            "time"
           ],
           "connection": {
-              "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT",
-              "table": "test"
-            }
+            "jdbcUrl": "jdbc:mysql://localhost:3306/bookrecommendsystem?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT",
+            "table": "test"
+          }
         }
       },
-      "ETL":[
+      "ETL": [
         {
-          "pluginName":"filterNullValuePlugin",
-          "pluginClassPath":"com.km.data.plugin.filterNullValuePlugin",
-          "parameter":[
+          "pluginName": "filterNullValuePlugin",
+          "classPath": "com.km.data.plugin.filterNullValuePlugin",
+          "parameters": [
             {
-              "name":"path",
-              "fieldName":"fieldName",
-              "necessary":true,
-              "value":"time"
+              "fieldName": "time"
             }
           ]
         },
         {
-          "pluginName":"filterNullValuePlugin",
-          "pluginClassPath":"com.km.data.plugin.filterNullValuePlugin",
-          "parameter":[
+          "pluginName": "filterNullValuePlugin",
+          "classPath": "com.km.data.plugin.filterNullValuePlugin",
+          "parameters": [
             {
-              "name":"path",
-              "fieldName":"fieldName",
-              "necessary":true,
-              "value":"password"
+              "fieldName": "password"
             }
           ]
         }

@@ -5,7 +5,7 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.*;
 
 public class FileUtil {
-    //本地测试
+    //打包
     public static String readFile(String filePath){
         // 读取txt内容为字符串
         StringBuffer txtContent = new StringBuffer();
@@ -38,7 +38,7 @@ public class FileUtil {
         }
         return txtContent.toString();
     }
-    //打包
+    //本地测试
 //    public static String readFile(String fileName) {
 //        String encoding = "UTF-8";
 //        File file = new File(fileName);

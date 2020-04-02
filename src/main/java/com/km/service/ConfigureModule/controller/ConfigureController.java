@@ -53,9 +53,10 @@ public class ConfigureController {
         String configureName = req.getParameter("configureName");
         String configureContent = req.getParameter("configureContent");
         String configureType = req.getParameter("configureType");
+        String configureStruct = req.getParameter("configureStruct");
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
-        configureService.addConfigure(configureType,configureName,configureContent,userId);
+        configureService.addConfigure(configureType,configureName,configureContent,configureStruct,userId);
         JSONObject message = new JSONObject();
         message.put("message","新增配置文件成功");
         return JSONObject.toJSON(message);
@@ -87,9 +88,58 @@ public class ConfigureController {
         String configureId = req.getParameter("configureId");
         String configureName = req.getParameter("configureName");
         String configureContent = req.getParameter("configureContent");
-        configureService.updateConfigure(configureId,configureName,configureContent);
+        String configureStruct = req.getParameter("configureStruct");
+        configureService.updateConfigure(configureId,configureName,configureContent,configureStruct);
         JSONObject message = new JSONObject();
         message.put("message","更新配置文件成功");
+        return JSONObject.toJSON(message);
+    }
+
+    /**
+     * 导出配置文件
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/exportConfigure", method = RequestMethod.POST)
+    public Object exportConfigure(HttpServletRequest req) {
+        String ids = req.getParameter("configureIds");
+        JSONArray configureIds = JSONArray.parseArray(ids);
+        JSONArray confJSONArray = new JSONArray();
+        for(int i = 0;i<configureIds.size();i++){
+            Conf conf = configureService.getConfigureByconfigureId(configureIds.get(i).toString());
+            JSONObject message = new JSONObject();
+            message.put("configureType", conf.getConfigureType());
+            message.put("configureName", conf.getConfigureName());
+            message.put("configureContent", conf.getConfigureContent());
+            message.put("configureStruct", conf.getConfigureStruct());
+            confJSONArray.add(message);
+        }
+        JSONObject message = new JSONObject();
+        message.put("contents",confJSONArray.toJSONString());
+        return JSONObject.toJSON(message);
+    }
+
+    /**
+     * 导入配置文件
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/importConfigure", method = RequestMethod.POST)
+    public Object importConfigure(HttpServletRequest req) {
+        String contents = req.getParameter("configures");
+        JSONArray confContents = JSONArray.parseArray(contents);
+        User user = (User) req.getAttribute("user");
+        String userId = user.getUserId();
+        for(int i = 0;i<confContents.size();i++){
+            JSONObject oneConf = confContents.getJSONObject(i);
+            String configureType = oneConf.getString("configureType");
+            String configureName = oneConf.getString("configureName");
+            String configureContent = oneConf.getString("configureContent");
+            String configureStruct = oneConf.getString("configureStruct");
+            configureService.addConfigure(configureType,configureName,configureContent,configureStruct,userId);
+        }
+        JSONObject message = new JSONObject();
+        message.put("message","导入配置文件成功");
         return JSONObject.toJSON(message);
     }
 }

@@ -13,18 +13,18 @@ public interface ConfigureMapper {
     @Select({"select * from conf where configureId = #{configureId}"})
     public Conf getConfigureByconfigureId(@Param("configureId") String configureId);
 
-    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.state,c.updateTime,c.runningJobCount FROM conf c,user u WHERE c.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
+    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.configureStruct,c.state,c.updateTime,c.runningJobCount FROM conf c,user u WHERE c.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
     public List<ConfUseridDto> getAllConfigures(@Param("start") int start, @Param("count") int count);
 
 
     @Insert({"insert into  conf values (#{conf.configureId},#{conf.configureType},#{conf.configureName}," +
-            "#{conf.userId},#{conf.configureContent},#{conf.state},#{conf.updateTime},#{conf.runningJobCount})"})
+            "#{conf.userId},#{conf.configureContent},#{conf.state},#{conf.updateTime},#{conf.runningJobCount},#{conf.configureStruct})"})
     public void addConfigure(@Param("conf")Conf conf);
 
 
     @Update({"update conf set configureType=#{conf.configureType},configureName=#{conf.configureName}," +
             "configureContent=#{conf.configureContent},state=#{conf.state}," +
-            "updateTime=#{conf.updateTime},runningJobCount=#{conf.runningJobCount} " +
+            "updateTime=#{conf.updateTime},runningJobCount=#{conf.runningJobCount},configureStruct=#{conf.configureStruct} " +
             "where configureId = #{conf.configureId}"})
     public void updateConfigure(@Param("conf") Conf conf);
 

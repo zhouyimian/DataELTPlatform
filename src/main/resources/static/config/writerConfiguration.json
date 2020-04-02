@@ -1,22 +1,22 @@
 {
   "writer":[
     {
-      "name":"streamwriter",
+      "pluginName":"streamwriter",
       "showName":"Stream",
       "classPath":"com.km.data.writer.StreamWriter"
     },
     {
-      "name":"hdfswriter",
+      "pluginName":"hdfswriter",
       "showName":"HDFS",
       "classPath":"com.km.data.writer.HdfsWriter"
     },
     {
-      "name":"mongodbwriter",
+      "pluginName":"mongodbwriter",
       "showName":"MongoDB",
       "classPath":"com.km.data.writer.MongoDBWriter"
     },
     {
-      "name":"mysqlwriter",
+      "pluginName":"mysqlwriter",
       "showName":"MySQL",
       "classPath":"com.km.data.writer.MysqlWriter"
     }

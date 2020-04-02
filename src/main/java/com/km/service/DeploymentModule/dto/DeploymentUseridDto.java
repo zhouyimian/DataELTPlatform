@@ -8,7 +8,7 @@ public class DeploymentUseridDto {
     private String userName;
     private String sourceConfigureId;
     private String targetConfigureId;
-    private String processIds;
+    private String processId;
     private String state;
     private Date updateTime;
 
@@ -52,12 +52,12 @@ public class DeploymentUseridDto {
         this.targetConfigureId = targetConfigureId;
     }
 
-    public String getProcessIds() {
-        return processIds;
+    public String getProcessId() {
+        return processId;
     }
 
-    public void setProcessIds(String processIds) {
-        this.processIds = processIds;
+    public void setProcessId(String processId) {
+        this.processId = processId;
     }
 
     public String getState() {
@@ -84,7 +84,7 @@ public class DeploymentUseridDto {
                 ", userName='" + userName + '\'' +
                 ", sourceConfigureId='" + sourceConfigureId + '\'' +
                 ", targetConfigureId='" + targetConfigureId + '\'' +
-                ", processIds='" + processIds + '\'' +
+                ", processId='" + processId + '\'' +
                 ", state='" + state + '\'' +
                 ", updateTime=" + updateTime +
                 '}';

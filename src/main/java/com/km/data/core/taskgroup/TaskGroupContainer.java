@@ -9,6 +9,7 @@ import com.km.data.core.enums.State;
 import com.km.data.core.statistics.communication.Communication;
 import com.km.data.core.statistics.communication.CommunicationTool;
 import com.km.data.core.statistics.communication.LocalTGCommunicationManager;
+import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.communicator.taskgroup.StandaloneTGContainerCommunicator;
 import com.km.data.core.transport.channel.Channel;
 import com.km.data.core.transport.channel.memory.MemoryChannel;
@@ -222,7 +223,6 @@ public class TaskGroupContainer extends AbstractContainer {
         nowTaskGroupContainerCommunication.setTimestamp(System.currentTimeMillis());
         Communication reportCommunication = CommunicationTool.getReportCommunication(nowTaskGroupContainerCommunication,
                 lastTaskGroupContainerCommunication, taskCount);
-        reportCommunication.setLongCounter("taskNumber",this.containerCommunicator.getCollector().collectFromTaskGroup().getLongCounter("taskNumber"));
         this.containerCommunicator.report(reportCommunication);
         return reportCommunication;
     }
@@ -326,11 +326,21 @@ public class TaskGroupContainer extends AbstractContainer {
 
             jobThread = new Thread(() -> {
                 try {
+                    taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_RECORDS, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_BYTES, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_RECORDS, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_BYTES, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.TOTAL_ETL_RECORDS, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.DONE_TASK_NUMBERS, 0);
+
+
                     reader.startRead(channel);
                     int recordSize = channel.size();
                     long recordBytes = channel.getTotalBytes();
+
                     taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_RECORDS, recordSize);
                     taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_BYTES, recordBytes);
+
                     if (taskConfig.getConfiguration("ETL") != null) {
                         ETL.process(channel, taskConfig.getConfiguration("ETL"));
                         taskCommunication.setLongCounter(CommunicationTool.TOTAL_ETL_RECORDS, recordSize);
@@ -343,6 +353,7 @@ public class TaskGroupContainer extends AbstractContainer {
                     taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_BYTES, recordBytes);
                     taskCommunication.setLongCounter(CommunicationTool.DONE_TASK_NUMBERS,taskCommunication.getLongCounter(CommunicationTool.DONE_TASK_NUMBERS)+1);
                 }catch (Exception e){
+                    taskCommunication.setThrowable(e);
                     taskCommunication.setState(State.FAILED);
                 }
             });

@@ -10,6 +10,7 @@ public class ConfUseridDto {
     private Date updateTime;
     private String configureName;
     private String configureContent;
+    private String configureStruct;
     private int runningJobCount;
 
     public String getConfigureType() {
@@ -76,6 +77,13 @@ public class ConfUseridDto {
         this.configureContent = configureContent;
     }
 
+    public String getConfigureStruct() {
+        return configureStruct;
+    }
+
+    public void setConfigureStruct(String configureStruct) {
+        this.configureStruct = configureStruct;
+    }
 
     @Override
     public String toString() {
@@ -87,6 +95,7 @@ public class ConfUseridDto {
                 ", updateTime=" + updateTime +
                 ", configureName='" + configureName + '\'' +
                 ", configureContent='" + configureContent + '\'' +
+                ", configureStruct='" + configureStruct + '\'' +
                 ", runningJobCount=" + runningJobCount +
                 '}';
     }

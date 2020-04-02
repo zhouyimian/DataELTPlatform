@@ -10,6 +10,7 @@ public class Conf {
     private String state;
     private Date updateTime;
     private String configureContent;
+    private String configureStruct;
     private int runningJobCount;
 
     public String getConfigureType() {
@@ -76,6 +77,14 @@ public class Conf {
         this.configureContent = configureContent;
     }
 
+    public String getConfigureStruct() {
+        return configureStruct;
+    }
+
+    public void setConfigureStruct(String configureStruct) {
+        this.configureStruct = configureStruct;
+    }
+
     @Override
     public String toString() {
         return "Conf{" +
@@ -86,6 +95,7 @@ public class Conf {
                 ", state='" + state + '\'' +
                 ", updateTime=" + updateTime +
                 ", configureContent='" + configureContent + '\'' +
+                ", configureStruct='" + configureStruct + '\'' +
                 ", runningJobCount=" + runningJobCount +
                 '}';
     }
