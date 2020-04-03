@@ -1,10 +1,10 @@
 {
   "reader":[
-    {
-      "pluginName":"streamreader",
-      "showName":"Stream",
-      "classPath":"com.km.data.reader.StreamReader"
-    },
+//    {
+//      "pluginName":"streamreader",
+//      "showName":"Stream",
+//      "classPath":"com.km.data.reader.StreamReader"
+//    },
     {
       "pluginName":"hdfsreader",
       "showName":"HDFS",

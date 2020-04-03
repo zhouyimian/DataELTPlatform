@@ -25,7 +25,7 @@ public interface DeploymentMapper {
 
 
     @Update({"update deployment set deploymentName=#{Deployment.deploymentName}," +
-            "configureId=#{Deployment.sourceConfigureId},configureId=#{Deployment.targetConfigureId}," +
+            "sourceConfigureId=#{Deployment.sourceConfigureId},targetConfigureId=#{Deployment.targetConfigureId}," +
             "processId=#{Deployment.processId},state=#{Deployment.state}," +
             "updateTime=#{Deployment.updateTime} where deploymentId = #{Deployment.deploymentId}"})
     public void updateDeployment(@Param("Deployment") Deployment deployment);

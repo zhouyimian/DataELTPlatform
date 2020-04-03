@@ -1,10 +1,10 @@
 {
   "writer":[
-    {
-      "pluginName":"streamwriter",
-      "showName":"Stream",
-      "classPath":"com.km.data.writer.StreamWriter"
-    },
+//    {
+//      "pluginName":"streamwriter",
+//      "showName":"Stream",
+//      "classPath":"com.km.data.writer.StreamWriter"
+//    },
     {
       "pluginName":"hdfswriter",
       "showName":"HDFS",
