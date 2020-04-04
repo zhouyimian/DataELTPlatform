@@ -1,7 +1,7 @@
 package com.km.data.etl.etlUtil;
 
 public class Key {
-    public final static String PLUGIN_NAME = "pluginname";
+    public final static String PLUGIN_NAME = "pluginName";
 
     public final static String PLUGIN_CLASSPATH = "classPath";
 

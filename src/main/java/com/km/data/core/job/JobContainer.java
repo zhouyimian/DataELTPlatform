@@ -6,8 +6,10 @@ import com.km.data.common.exception.CommonErrorCode;
 import com.km.data.common.exception.DataETLException;
 import com.km.data.common.util.Configuration;
 import com.km.data.core.AbstractContainer;
+import com.km.data.core.enums.State;
 import com.km.data.core.job.scheduler.StandAloneScheduler;
 import com.km.data.core.statistics.communication.Communication;
+import com.km.data.core.statistics.communication.CommunicationTool;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.communicator.job.StandAloneJobContainerCommunicator;
 import com.km.data.core.util.FrameworkErrorCode;
@@ -18,7 +20,6 @@ import com.km.data.writer.Writer;
 import com.km.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.km.data.core.statistics.communication.CommunicationTool;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +39,10 @@ public class JobContainer extends AbstractContainer {
     private String readerPluginName;
 
     private String writerPluginName;
+
+    private long startTimeStamp;
+
+    private long endTimeStamp;
 
     /**
      * reader和writer jobContainer的实例
@@ -63,6 +68,8 @@ public class JobContainer extends AbstractContainer {
     public void start() {
         LOG.info("DataX jobContainer starts job.");
         try {
+
+            this.startTimeStamp = System.currentTimeMillis();
             LOG.debug("jobContainer starts to do init ...");
             this.init();
             LOG.info("jobContainer starts to do split ...");
@@ -84,10 +91,31 @@ public class JobContainer extends AbstractContainer {
             //this.getContainerCommunicator().getCollector().getTGCommunicationManager()
         } catch (Throwable e) {
             LOG.error("Exception when job run", e);
-
+            this.endTimeStamp = System.currentTimeMillis();
             if (e instanceof OutOfMemoryError) {
                 System.gc();
             }
+            if (super.getContainerCommunicator() == null) {
+                // 由于 containerCollector 是在 scheduler() 中初始化的，所以当在 scheduler() 之前出现异常时，需要在此处对 containerCollector 进行初始化
+
+                AbstractContainerCommunicator tempContainerCollector;
+                // standalone
+                tempContainerCollector = new StandAloneJobContainerCommunicator(configuration);
+
+                super.setContainerCommunicator(tempContainerCollector);
+            }
+            Communication communication = super.getContainerCommunicator().collect();
+            // 汇报前的状态，不需要手动进行设置
+            communication.setState(State.FAILED);
+            communication.setThrowable(e);
+            communication.setTimestamp(System.currentTimeMillis());
+
+            Communication tempComm = new Communication();
+            tempComm.setTimestamp(0);
+
+            Communication reportCommunication = CommunicationTool.getReportCommunication(communication, tempComm, 1);
+            super.getContainerCommunicator().report(reportCommunication);
+
             throw DataETLException.asDataETLException(
                     FrameworkErrorCode.RUNTIME_ERROR, e);
         }
@@ -101,8 +129,8 @@ public class JobContainer extends AbstractContainer {
         this.readerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_READER_NAME);
         this.writerPluginName = configuration.getString(CoreConstant.DATAX_JOB_CONTENT_WRITER_NAME);
 
-        String readerConfigPath = "src/main/resources/static/config/readerConfiguration.json";
-        String writerConfigPath = "src/main/resources/static/config/writerConfiguration.json";
+        String readerConfigPath = "static/config/readerConfiguration.json";
+        String writerConfigPath = "static/config/writerConfiguration.json";
         Configuration readerConfig = Configuration.from(FileUtil.readFile(readerConfigPath));
         Configuration writerConfig = Configuration.from(FileUtil.readFile(writerConfigPath));
 
@@ -282,4 +310,13 @@ public class JobContainer extends AbstractContainer {
     public int getTaskNumber() {
         return taskNumber;
     }
+
+    public long getStartTimeStamp() {
+        return startTimeStamp;
+    }
+
+    public long getEndTimeStamp() {
+        return endTimeStamp;
+    }
+
 }

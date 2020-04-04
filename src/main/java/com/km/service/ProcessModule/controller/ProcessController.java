@@ -3,13 +3,11 @@ package com.km.service.ProcessModule.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.km.data.common.util.Configuration;
-import com.km.service.PermissionModule.service.PermissionService;
+import com.km.service.ConfigureModule.service.ConfigureService;
 import com.km.service.ProcessModule.domain.Process;
 import com.km.service.ProcessModule.dto.ProcessUseridDto;
 import com.km.service.ProcessModule.service.ProcessService;
 import com.km.service.UserModule.domain.User;
-import com.km.service.common.UnAuthToken;
-import com.km.service.common.utils.RedisUtil;
 import com.km.utils.LoadConfigureUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,13 +15,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ProcessController {
 
     @Autowired
     private ProcessService processService;
+    @Autowired
+    private ConfigureService configureService;
 
 
     @RequestMapping(value = "/getAllProcess", method = RequestMethod.POST)
@@ -31,13 +32,22 @@ public class ProcessController {
         int pageSize = Integer.parseInt(req.getParameter("pageSize"));
         int pageNumber = Integer.parseInt(req.getParameter("pageNumber"));
         List<ProcessUseridDto> list = processService.getAllProcess(pageSize,pageNumber);
+        JSONArray processDesc = new JSONArray();
+        for(ProcessUseridDto dto:list){
+            JSONObject object  = JSONObject.parseObject(JSONObject.toJSON(dto).toString());
+            JSONArray jsonArray = JSONArray.parseArray(dto.getProcessContent());
+            int size = jsonArray.size();
+            object.put("input",jsonArray.getJSONObject(0).getString("pluginName"));
+            object.put("output",jsonArray.getJSONObject(size-1).getString("pluginName"));
+            processDesc.add(object);
+        }
         int totalSize = processService.getProcessCount();
         int totalPages = totalSize/pageSize+(totalSize%pageSize==0?0:1);
         JSONObject message = new JSONObject();
         message.put("pageSize",pageSize);
         message.put("pageNumber",pageNumber);
         message.put("totalPages",totalPages);
-        message.put("processDesc",list);
+        message.put("processDesc",processDesc);
         return JSONObject.toJSON(message);
     }
 

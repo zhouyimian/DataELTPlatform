@@ -2,8 +2,6 @@ package com.km.service.DeploymentModule.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.km.data.core.statistics.communication.Communication;
-import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.ConfigureModule.service.ConfigureService;
 import com.km.service.DeploymentModule.domain.Deployment;
@@ -12,16 +10,13 @@ import com.km.service.DeploymentModule.service.DeploymentService;
 import com.km.service.ProcessModule.domain.Process;
 import com.km.service.ProcessModule.service.ProcessService;
 import com.km.service.UserModule.domain.User;
-import com.km.service.common.CommunicateInformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class DeploymentController {
@@ -43,11 +38,21 @@ public class DeploymentController {
         List<DeploymentUseridDto> list = deploymentService.getAllDeployments(pageSize, pageNumber);
         int totalSize = deploymentService.getDeploymentCount();
         int totalPages = totalSize / pageSize + (totalSize % pageSize == 0 ? 0 : 1);
+        JSONArray deployDesc = new JSONArray();
+        for(DeploymentUseridDto dto:list){
+            JSONObject object  = JSONObject.parseObject(JSONObject.toJSON(dto).toString());
+            Process process = processService.getProcessByProcessId(dto.getProcessId());
+            JSONArray jsonArray = JSONArray.parseArray(process.getProcessContent());
+            int size = jsonArray.size();
+            object.put("input",jsonArray.getJSONObject(0).getString("pluginName"));
+            object.put("output",jsonArray.getJSONObject(size-1).getString("pluginName"));
+            deployDesc.add(object);
+        }
         JSONObject message = new JSONObject();
         message.put("pageSize", pageSize);
         message.put("pageNumber", pageNumber);
         message.put("totalPages", totalPages);
-        message.put("deployDesc", list);
+        message.put("deployDesc", deployDesc);
 
         return JSONObject.toJSON(message);
     }
@@ -126,7 +131,8 @@ public class DeploymentController {
     @RequestMapping(value = "/startDeployment", method = RequestMethod.POST)
     public Object startDeployment(HttpServletRequest req) {
         String deploymentId = req.getParameter("deploymentId");
-        deploymentService.startDeployment(deploymentId);
+        User user = (User) req.getAttribute("user");
+        deploymentService.startDeployment(deploymentId,user);
         JSONObject message = new JSONObject();
         message.put("message", "启动部署成功");
         return JSONObject.toJSON(message);
@@ -135,7 +141,7 @@ public class DeploymentController {
     @RequestMapping(value = "/stopDeployment", method = RequestMethod.POST)
     public Object stopDeployment(HttpServletRequest req) {
         String deploymentId = req.getParameter("deploymentId");
-        deploymentService.stopDeployment(deploymentId);
+        deploymentService.stopDeploy(deploymentId,true);
         JSONObject message = new JSONObject();
         message.put("message", "暂停部署成功");
         return JSONObject.toJSON(message);

@@ -7,11 +7,9 @@ import com.km.data.core.transport.channel.Channel;
 
 public class filterNullValuePlugin extends Plugin {
 
-    @Field(fieldName = "field1", desc = "这个是想要进行空值过滤的字段名称",necessary = true)
-    private String fieldName;
 
-    @Field(fieldName = "field2", desc = "这个是想要进行空值过滤的字段名称",necessary = false)
-    private String test;
+    @Field(fieldName = "字段名", desc = "进行空值过滤的字段名称",necessary = true)
+    private String fieldName;
 
     public filterNullValuePlugin(Configuration configuration) {
         super(configuration);
@@ -20,10 +18,10 @@ public class filterNullValuePlugin extends Plugin {
 
     @Override
     public void process(Channel channel) {
-        int size = channel.size();
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < channel.size(); i++) {
             if (channel.get(i).getColumnValue(fieldName) == null) {
                 channel.remove(i);
+                i--;
             }
         }
     }

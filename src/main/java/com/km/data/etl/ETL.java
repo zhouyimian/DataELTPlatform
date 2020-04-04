@@ -17,28 +17,26 @@ public class ETL {
 
         JSONArray classAndParameters = JSONArray.parseArray(configuration.toJSON());
 
-        for(Object object:classAndParameters){
+        for (Object object : classAndParameters) {
             JSONObject oneClassAndParameter = (JSONObject) object;
-            processRecord(channel,oneClassAndParameter,configuration);
+            processRecord(channel, oneClassAndParameter, configuration);
         }
     }
 
-    private static void processRecord(Channel channel, JSONObject oneClassAndParameter,Configuration configuration) throws Exception {
+    private static void processRecord(Channel channel, JSONObject oneClassAndParameter, Configuration configuration) throws Exception {
         String classPath = oneClassAndParameter.getString(Key.PLUGIN_CLASSPATH);
-        JSONArray parameters = oneClassAndParameter.getJSONArray(Key.PLUGIN_PARAMETER);
+        JSONObject parameters = oneClassAndParameter.getJSONObject(Key.PLUGIN_PARAMETER);
         Plugin plugin = (Plugin) Class.forName(classPath).getConstructor(Configuration.class).newInstance(configuration);
-        inject(plugin,parameters);
+        inject(plugin, parameters);
         plugin.process(channel);
     }
 
-    private static void inject(Plugin plugin, JSONArray parameters) throws Exception {
-        for(int i = 0;i<parameters.size();i++){
-            JSONObject parameter = parameters.getJSONObject(i);
-            for(Map.Entry<String,Object> entry:parameter.entrySet()){
-                Field field = plugin.getClass().getDeclaredField(entry.getKey());
-                field.setAccessible(true);
-                field.set(plugin,entry.getValue().toString());
-            }
+    private static void inject(Plugin plugin, JSONObject parameter) throws Exception {
+        for (Map.Entry<String, Object> entry : parameter.entrySet()) {
+            Field field = plugin.getClass().getDeclaredField(entry.getKey());
+            field.setAccessible(true);
+            field.set(plugin, entry.getValue().toString());
         }
+
     }
 }

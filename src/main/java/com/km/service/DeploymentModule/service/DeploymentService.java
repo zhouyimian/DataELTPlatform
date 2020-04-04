@@ -2,8 +2,7 @@ package com.km.service.DeploymentModule.service;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.km.data.core.statistics.communication.Communication;
-import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
+import com.km.data.core.job.JobContainer;
 import com.km.service.ConfigureModule.Mapper.ConfigureMapper;
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.DataModule.service.DataService;
@@ -12,12 +11,14 @@ import com.km.service.DeploymentModule.domain.Deployment;
 import com.km.service.DeploymentModule.dto.DeploymentUseridDto;
 import com.km.service.ProcessModule.Mapper.ProcessMapper;
 import com.km.service.ProcessModule.domain.Process;
-import com.km.service.common.CommunicateInformation;
+import com.km.service.UserModule.domain.User;
 import com.km.service.common.exception.serviceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DeploymentService {
@@ -34,7 +35,7 @@ public class DeploymentService {
     @Autowired
     DataService dataService;
 
-    public static Map<String,CommunicateInformation> allDeploymentInfoMap = new HashMap<>();
+
 
 
     public List<DeploymentUseridDto> getAllDeployments(int pageSize, int pageNumber) {
@@ -84,32 +85,48 @@ public class DeploymentService {
         deploymentMapper.updateDeployment(deployment);
     }
 
-    public void startDeployment(String deploymentId) {
+    public void startDeployment(String deploymentId, User user) {
         Deployment deployment = deploymentMapper.getDeploymentBydeployId(deploymentId);
         deployment.setState("运行中");
         deploymentMapper.updateDeployment(deployment);
+
 
         Conf sourceConf = configureMapper.getConfigureByconfigureId(deployment.getSourceConfigureId());
         sourceConf.setState("使用中");
         sourceConf.setRunningJobCount(sourceConf.getRunningJobCount() + 1);
         configureMapper.updateConfigure(sourceConf);
+
+
         Conf targetConf = configureMapper.getConfigureByconfigureId(deployment.getTargetConfigureId());
         targetConf.setState("使用中");
         targetConf.setRunningJobCount(targetConf.getRunningJobCount() + 1);
         configureMapper.updateConfigure(targetConf);
+
 
         String processId = deployment.getProcessId();
         Process process = processMapper.getProcessByProcessId(processId);
         process.setState("运行中");
         process.setRunningJobCount(process.getRunningJobCount() + 1);
         processMapper.updateProcess(process);
-        CommunicateInformation information = new CommunicateInformation();
-        information.setDeploymentId(deploymentId);
-        dataService.startProcess(sourceConf, targetConf, process,information);
-        allDeploymentInfoMap.put(deploymentId,information);
+
+
+
+        try {
+            dataService.startDeploy(deploymentId,sourceConf, targetConf, process);
+        }catch (Exception e){
+            JobContainer jobContainer = dataService.getJobContainer(deploymentId);
+            if(jobContainer==null){
+                stopDeploy(deploymentId,false);
+                throw new serviceException("部署启动失败，具体失败看详情请看报错异常，或者查看后台服务端日志 "+e.getMessage());
+            }else{
+                dataService.addMessage(jobContainer,deployment,user);
+                stopDeploy(deploymentId,false);
+                throw new serviceException("部署执行失败，具体失败看详情请看报错异常，或者查看后台服务端日志 "+e.getMessage());
+            }
+        }
     }
 
-    public void stopDeployment(String deploymentId) {
+    public void stopDeploy(String deploymentId,boolean iskill) {
         Deployment deployment = deploymentMapper.getDeploymentBydeployId(deploymentId);
         deployment.setState("停止");
         deploymentMapper.updateDeployment(deployment);
@@ -125,32 +142,16 @@ public class DeploymentService {
             targetConf.setState("停止");
         configureMapper.updateConfigure(targetConf);
 
-
         String processId = deployment.getProcessId();
         Process process = processMapper.getProcessByProcessId(processId);
         process.setRunningJobCount(process.getRunningJobCount() - 1);
         if (process.getRunningJobCount() == 0)
             process.setState("停止");
         processMapper.updateProcess(process);
+
+        dataService.stopDeploy(deploymentId,iskill);
     }
     public JSONObject getRunningInformation(String deploymentId){
-        CommunicateInformation information = allDeploymentInfoMap.get(deploymentId);
-        if(information==null)
-            return null;
-        else
-            return extractCommunicateInfo(information);
-    }
-    private JSONObject extractCommunicateInfo(CommunicateInformation information) {
-        JSONObject message = new JSONObject();
-        message.put("taskNum",information.getTaskNum());
-        Communication communication = information.getContainerCommunicator().collect();
-        message.put("state",communication.getState());
-        message.put("exception",communication.getThrowable().getMessage());
-        for(Map.Entry<String,Number> entry:communication.getCounter().entrySet()){
-            String key = entry.getKey();
-            Number value = entry.getValue();
-            message.put(key,value.longValue());
-        }
-        return message;
+        return dataService.getJobRunningCondition(deploymentId);
     }
 }

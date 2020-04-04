@@ -3,14 +3,10 @@ package com.km.data.core.job.scheduler;
 import com.km.data.common.exception.DataETLException;
 import com.km.data.common.util.Configuration;
 import com.km.data.common.util.FrameworkErrorCode;
-import com.km.data.core.job.scheduler.AbstractScheduler;
-import com.km.data.core.statistics.communication.Communication;
-import com.km.data.core.statistics.communication.CommunicationTool;
 import com.km.data.core.statistics.communication.LocalTGCommunicationManager;
 import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.taskgroup.TaskGroupContainer;
 import com.km.data.core.taskgroup.runner.TaskGroupContainerRunner;
-import com.km.data.core.util.container.CoreConstant;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

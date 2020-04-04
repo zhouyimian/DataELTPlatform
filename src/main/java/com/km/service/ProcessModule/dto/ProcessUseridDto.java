@@ -6,18 +6,10 @@ public class ProcessUseridDto {
     private String processId;
     private String processName;
     private String userName;
-    private String processcontent;
+    private String processContent;
     private String state;
     private Date updateTime;
     private int runningJobCount;
-
-    public int getRunningJobCount() {
-        return runningJobCount;
-    }
-
-    public void setRunningJobCount(int runningJobCount) {
-        this.runningJobCount = runningJobCount;
-    }
 
     public String getProcessId() {
         return processId;
@@ -43,12 +35,12 @@ public class ProcessUseridDto {
         this.userName = userName;
     }
 
-    public String getProcesscontent() {
-        return processcontent;
+    public String getProcessContent() {
+        return processContent;
     }
 
-    public void setProcesscontent(String processcontent) {
-        this.processcontent = processcontent;
+    public void setProcessContent(String processContent) {
+        this.processContent = processContent;
     }
 
     public String getState() {
@@ -67,13 +59,21 @@ public class ProcessUseridDto {
         this.updateTime = updateTime;
     }
 
+    public int getRunningJobCount() {
+        return runningJobCount;
+    }
+
+    public void setRunningJobCount(int runningJobCount) {
+        this.runningJobCount = runningJobCount;
+    }
+
     @Override
     public String toString() {
         return "ProcessUseridDto{" +
                 "processId='" + processId + '\'' +
                 ", processName='" + processName + '\'' +
                 ", userName='" + userName + '\'' +
-                ", processcontent='" + processcontent + '\'' +
+                ", processContent='" + processContent + '\'' +
                 ", state='" + state + '\'' +
                 ", updateTime=" + updateTime +
                 ", runningJobCount=" + runningJobCount +

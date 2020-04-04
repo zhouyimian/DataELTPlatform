@@ -9,7 +9,6 @@ import com.km.data.core.enums.State;
 import com.km.data.core.statistics.communication.Communication;
 import com.km.data.core.statistics.communication.CommunicationTool;
 import com.km.data.core.statistics.communication.LocalTGCommunicationManager;
-import com.km.data.core.statistics.container.communicator.AbstractContainerCommunicator;
 import com.km.data.core.statistics.container.communicator.taskgroup.StandaloneTGContainerCommunicator;
 import com.km.data.core.transport.channel.Channel;
 import com.km.data.core.transport.channel.memory.MemoryChannel;
@@ -20,7 +19,6 @@ import com.km.data.writer.Writer;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +41,7 @@ public class TaskGroupContainer extends AbstractContainer {
 
     private TaskMonitor taskMonitor = TaskMonitor.getInstance();
 
-    public TaskGroupContainer(Configuration configuration,LocalTGCommunicationManager tgCommunicationManager) {
+    public TaskGroupContainer(Configuration configuration, LocalTGCommunicationManager tgCommunicationManager) {
         //构造方法仅保存了taskgroup全局配置文件
         super(configuration);
 
@@ -99,9 +97,24 @@ public class TaskGroupContainer extends AbstractContainer {
             Communication lastTaskGroupContainerCommunication = new Communication();
 
             while (true) {
+                Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
+                //0.判断任务是否被停止或者其他taskgroup已经失败，导致该任务也失败
+                State nowState = this.tgCommunicationManager.getTaskGroupCommunication(this.taskGroupId).getState();
+                if(nowState==State.KILLED||nowState==State.FAILED){
+                    //如果任务被停止或者其他taskgroup失败，需要把所有未完成的task设置为失败
+                    for (Map.Entry<Integer, Communication> entry : communicationMap.entrySet()) {
+                        Integer taskId = entry.getKey();
+                        Communication taskCommunication = entry.getValue();
+                        if (!taskCommunication.isFinished()) {
+                            taskCommunication.setState(nowState);
+                        }
+                    }
+                    reportTaskGroupCommunication(
+                            lastTaskGroupContainerCommunication, taskCountInThisTaskGroup);
+                    break;
+                }
                 //1.判断task状态
                 boolean failedOrKilled = false;
-                Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
                 for (Map.Entry<Integer, Communication> entry : communicationMap.entrySet()) {
                     Integer taskId = entry.getKey();
                     Communication taskCommunication = entry.getValue();
@@ -255,9 +268,10 @@ public class TaskGroupContainer extends AbstractContainer {
         }
         return remainTasks;
     }
-    private boolean isAllTaskDone(List<TaskExecutor> taskList){
-        for(TaskExecutor taskExecutor : taskList){
-            if(!taskExecutor.isTaskFinished()){
+
+    private boolean isAllTaskDone(List<TaskExecutor> taskList) {
+        for (TaskExecutor taskExecutor : taskList) {
+            if (!taskExecutor.isTaskFinished()) {
                 return false;
             }
         }
@@ -351,8 +365,8 @@ public class TaskGroupContainer extends AbstractContainer {
                     taskCommunication.setState(State.SUCCEEDED);
                     taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_RECORDS, recordSize);
                     taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_BYTES, recordBytes);
-                    taskCommunication.setLongCounter(CommunicationTool.DONE_TASK_NUMBERS,taskCommunication.getLongCounter(CommunicationTool.DONE_TASK_NUMBERS)+1);
-                }catch (Exception e){
+                    taskCommunication.setLongCounter(CommunicationTool.DONE_TASK_NUMBERS, taskCommunication.getLongCounter(CommunicationTool.DONE_TASK_NUMBERS) + 1);
+                } catch (Exception e) {
                     taskCommunication.setThrowable(e);
                     taskCommunication.setState(State.FAILED);
                 }
