@@ -37,4 +37,12 @@ public interface ConfigureMapper {
     @Select({"select runningJobCount from conf where configureId = #{configureId}"})
     public int getRunningJobCount(@Param("configureId")String configureId);
 
+    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.configureStruct,c.state,c.updateTime,c.runningJobCount FROM conf c,user u WHERE u.userId=#{userId} AND c.userId = u.userId ORDER BY updateTime DESC"})
+    List<ConfUseridDto> getAllPrivateConfigures(@Param("userId") String userId);
+
+    @Select({"SELECT c.configureId,c.configureType,c.configureName,u.username,c.configureContent,c.configureStruct,c.state,c.updateTime,c.runningJobCount FROM conf c,user u WHERE u.userId=#{userId} AND c.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
+    List<ConfUseridDto> getPagePrivateConfigures(@Param("userId") String userId, @Param("start") int start, @Param("count") int count);
+
+    @Select({"select count(*) from conf where userId=#{userId}"})
+    int getPrivateConfigureCount(@Param("userId") String userId);
 }

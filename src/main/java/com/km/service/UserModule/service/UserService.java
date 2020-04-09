@@ -19,7 +19,11 @@ public class UserService {
         userMapper.register(userid,username,password,"");
     }
 
-    public User findUserByUserName(String username) {
+    public User getUserByUserName(String username) {
         return userMapper.findUserByUserName(username);
+    }
+
+    public User getUserByUserId(String userId) {
+        return userMapper.getUserByUserId(userId);
     }
 }

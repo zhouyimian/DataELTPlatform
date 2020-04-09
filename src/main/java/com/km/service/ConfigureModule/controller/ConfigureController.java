@@ -2,14 +2,11 @@ package com.km.service.ConfigureModule.controller;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.km.data.common.util.Configuration;
 import com.km.service.ConfigureModule.domain.Conf;
 import com.km.service.ConfigureModule.dto.ConfUseridDto;
 import com.km.service.ConfigureModule.service.ConfigureService;
-import com.km.service.ProcessModule.domain.Process;
-import com.km.service.ProcessModule.dto.ProcessUseridDto;
 import com.km.service.UserModule.domain.User;
-import com.km.utils.LoadConfigureUtil;
+import com.km.service.common.exception.serviceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class ConfigureController {
@@ -74,12 +70,24 @@ public class ConfigureController {
     @RequestMapping(value = "/batchDeleteConfigure", method = RequestMethod.POST)
     public Object batchDeleteConfigure(HttpServletRequest req) {
         String ids = req.getParameter("configureIds");
+        User user = (User) req.getAttribute("user");
         JSONArray configureIds = JSONArray.parseArray(ids);
-        for(int i = 0;i<configureIds.size();i++) {
-            configureService.deleteConfigure(configureIds.get(i).toString());
-        }
         JSONObject message = new JSONObject();
-        message.put("message","批量删除配置文件成功");
+        boolean isNotPermission = false;
+        for (int i = 0; i < configureIds.size(); i++) {
+            Conf conf = configureService.getConfigureByconfigureId(configureIds.get(i).toString());
+            if (!conf.getUserId().equals(user.getUserId())) {
+                isNotPermission = true;
+                break;
+            }
+        }
+        if(isNotPermission){
+            throw new serviceException("要删除的配置文件中有部分无删除权限!");
+        }else{
+            for(int i = 0;i<configureIds.size();i++)
+                configureService.deleteConfigure(configureIds.getString(i));
+            message.put("message","批量删除配置文件成功");
+        }
         return JSONObject.toJSON(message);
     }
 
@@ -140,6 +148,34 @@ public class ConfigureController {
         }
         JSONObject message = new JSONObject();
         message.put("message","导入配置文件成功");
+        return JSONObject.toJSON(message);
+    }
+
+
+    @RequestMapping(value = "/getAllPrivateConfigures", method = RequestMethod.POST)
+    public Object getAllPrivateConfigures(HttpServletRequest req) {
+        User user = (User) req.getAttribute("user");
+        List<ConfUseridDto> list;
+        JSONObject message = new JSONObject();
+        int pageSize;
+        int pageNumber;
+        int totalPages;
+        if (req.getParameter("pageSize") == null && req.getParameter("pageNumber") == null) {
+            list = configureService.getAllPrivateConfigures(user.getUserId());
+            pageSize = list.size();
+            pageNumber = 1;
+            totalPages = 1;
+        }else{
+            pageSize = Integer.parseInt(req.getParameter("pageSize"));
+            pageNumber = Integer.parseInt(req.getParameter("pageNumber"));
+            list = configureService.getPagePrivateConfigures(user.getUserId(),pageSize,pageNumber);
+            int totalSize = configureService.getPrivateConfigureCount(user.getUserId());
+            totalPages = totalSize/pageSize+(totalSize%pageSize==0?0:1);
+        }
+        message.put("pageSize",pageSize);
+        message.put("pageNumber",pageNumber);
+        message.put("totalPages",totalPages);
+        message.put("confDesc",list);
         return JSONObject.toJSON(message);
     }
 }

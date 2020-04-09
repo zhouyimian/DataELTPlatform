@@ -66,4 +66,17 @@ public class ConfigureService {
         conf.setConfigureStruct(configureStruct);
         configureMapper.updateConfigure(conf);
     }
+
+    public List<ConfUseridDto> getAllPrivateConfigures(String userId) {
+        return configureMapper.getAllPrivateConfigures(userId);
+    }
+
+    public List<ConfUseridDto> getPagePrivateConfigures(String userId, int pageSize, int pageNumber) {
+        int start = (pageNumber-1)*pageSize;
+        return configureMapper.getPagePrivateConfigures(userId,start,pageSize);
+    }
+
+    public int getPrivateConfigureCount(String userId) {
+        return configureMapper.getPrivateConfigureCount(userId);
+    }
 }

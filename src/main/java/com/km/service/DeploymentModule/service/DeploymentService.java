@@ -5,13 +5,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.km.data.core.job.JobContainer;
 import com.km.service.ConfigureModule.Mapper.ConfigureMapper;
 import com.km.service.ConfigureModule.domain.Conf;
-import com.km.service.DataModule.service.DataService;
+import com.km.service.JobModule.domain.JobReport;
+import com.km.service.JobModule.service.DataService;
 import com.km.service.DeploymentModule.Mapper.DeploymentMapper;
 import com.km.service.DeploymentModule.domain.Deployment;
 import com.km.service.DeploymentModule.dto.DeploymentUseridDto;
 import com.km.service.ProcessModule.Mapper.ProcessMapper;
 import com.km.service.ProcessModule.domain.Process;
-import com.km.service.UserModule.domain.User;
 import com.km.service.common.exception.serviceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +85,7 @@ public class DeploymentService {
         deploymentMapper.updateDeployment(deployment);
     }
 
-    public void startDeployment(String deploymentId, User user) {
+    public void startDeployment(String deploymentId, String startUser) {
         Deployment deployment = deploymentMapper.getDeploymentBydeployId(deploymentId);
         deployment.setState("运行中");
         deploymentMapper.updateDeployment(deployment);
@@ -109,24 +109,50 @@ public class DeploymentService {
         process.setRunningJobCount(process.getRunningJobCount() + 1);
         processMapper.updateProcess(process);
 
-
-
         try {
-            dataService.startDeploy(deploymentId,sourceConf, targetConf, process);
+            dataService.startDeploy(startUser,deploymentId,sourceConf, targetConf, process);
         }catch (Exception e){
             JobContainer jobContainer = dataService.getJobContainer(deploymentId);
+            dealAfterFinishDeployment(deploymentId);
+            //容器还未启动就报错
             if(jobContainer==null){
-                stopDeploy(deploymentId,false);
-                throw new serviceException("部署启动失败，具体失败看详情请看报错异常，或者查看后台服务端日志 "+e.getMessage());
+                throw new serviceException("部署启动失败,失败原因是 "+e.getMessage());
             }else{
-                dataService.addMessage(jobContainer,deployment,user);
-                stopDeploy(deploymentId,false);
-                throw new serviceException("部署执行失败，具体失败看详情请看报错异常，或者查看后台服务端日志 "+e.getMessage());
+                JobReport jobReport = dataService.buildJobReport(deployment);
+                jobReport.setThrowable(e.getMessage());
+                dataService.saveJobReport(jobReport);
+                dataService.removeJobContainer(deploymentId);
+                throw new serviceException("部署执行失败,失败原因请查看任务报告");
             }
         }
     }
 
-    public void stopDeploy(String deploymentId,boolean iskill) {
+    public void stopDeployment(String deploymentId) {
+        Deployment deployment = deploymentMapper.getDeploymentBydeployId(deploymentId);
+        dataService.stopDeployment(deployment);
+    }
+    public JSONObject getRunningInformation(String deploymentId){
+        return dataService.getJobRunningCondition(deploymentId);
+    }
+
+    public List<DeploymentUseridDto> getAllPrivateDeployments(String userId) {
+        return deploymentMapper.getAllPrivateDeployments(userId);
+    }
+
+    public List<DeploymentUseridDto> getAllPermissionDeployments(String userId) {
+        return deploymentMapper.getAllPermissionDeployments(userId);
+    }
+
+    public int getPrivateDeploymentCount(String userId) {
+        return deploymentMapper.getPrivateDeploymentCount(userId);
+    }
+
+    public List<DeploymentUseridDto> getPagePrivateDeployments(String userId, int pageSize, int pageNumber) {
+        int start = (pageNumber - 1) * pageSize;
+        return deploymentMapper.getPagePrivateDeployments(userId,start, pageSize);
+    }
+
+    public void dealAfterFinishDeployment(String deploymentId) {
         Deployment deployment = deploymentMapper.getDeploymentBydeployId(deploymentId);
         deployment.setState("停止");
         deploymentMapper.updateDeployment(deployment);
@@ -148,10 +174,12 @@ public class DeploymentService {
         if (process.getRunningJobCount() == 0)
             process.setState("停止");
         processMapper.updateProcess(process);
+    }
 
-        dataService.stopDeploy(deploymentId,iskill);
+
+    public List<DeploymentUseridDto> getUserAuthorizedDeployments(String userId) {
+        return deploymentMapper.getUserAuthorizedDeployments(userId);
     }
-    public JSONObject getRunningInformation(String deploymentId){
-        return dataService.getJobRunningCondition(deploymentId);
-    }
+
+
 }

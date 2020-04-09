@@ -12,28 +12,51 @@ import java.util.List;
 public interface DeploymentMapper {
 
     @Select({"select * from deployment where deploymentId = #{deploymentId}"})
-    public Deployment getDeploymentBydeployId(@Param("deploymentId") String deploymentId);
+    Deployment getDeploymentBydeployId(@Param("deploymentId") String deploymentId);
 
     @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processId,d.state,d.updateTime FROM deployment d,user u WHERE d.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
-    public List<DeploymentUseridDto> getAllDeployments(@Param("start") int start, @Param("count") int count);
+    List<DeploymentUseridDto> getAllDeployments(@Param("start") int start, @Param("count") int count);
 
 
     @Insert({"insert into deployment values (#{Deployment.deploymentId},#{Deployment.deploymentName}," +
             "#{Deployment.userId},#{Deployment.sourceConfigureId},#{Deployment.targetConfigureId}," +
             "#{Deployment.processId},#{Deployment.state},#{Deployment.updateTime})"})
-    public void addDeployment(@Param("Deployment") Deployment deployment);
+    void addDeployment(@Param("Deployment") Deployment deployment);
 
 
     @Update({"update deployment set deploymentName=#{Deployment.deploymentName}," +
             "sourceConfigureId=#{Deployment.sourceConfigureId},targetConfigureId=#{Deployment.targetConfigureId}," +
             "processId=#{Deployment.processId},state=#{Deployment.state}," +
             "updateTime=#{Deployment.updateTime} where deploymentId = #{Deployment.deploymentId}"})
-    public void updateDeployment(@Param("Deployment") Deployment deployment);
+    void updateDeployment(@Param("Deployment") Deployment deployment);
 
     @Delete({"delete from deployment where deploymentId = #{deploymentId}"})
-    public void deleteDeployment(String deploymentId);
+    void deleteDeployment(@Param("deploymentId") String deploymentId);
 
     @Select({"select count(*) from deployment"})
-    public int getDeploymentCount();
+    int getDeploymentCount();
 
+    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processId,d.state,d.updateTime " +
+            "FROM deployment d,user u " +
+            "WHERE d.userId =#{userId} AND d.userId = u.userId ORDER BY updateTime DESC"})
+    List<DeploymentUseridDto> getAllPrivateDeployments(@Param("userId")String userId);
+
+    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processId,d.state,d.updateTime " +
+            "FROM deployment d,USER u,permission p " +
+            "WHERE u.userId = #{userId} AND d.deploymentId = p.deploymentId AND p.userId = #{userId} ORDER BY updateTime DESC"})
+    List<DeploymentUseridDto> getAllPermissionDeployments(@Param("userId")String userId);
+
+    @Select({"select count(*) from deployment where userId = #{userId}"})
+    int getPrivateDeploymentCount(@Param("userId")String userId);
+
+    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processId,d.state,d.updateTime " +
+            "FROM deployment d,user u " +
+            "WHERE u.userId = #{userId} AND d.userId = u.userId ORDER BY updateTime DESC LIMIT #{start},#{count} "})
+    List<DeploymentUseridDto> getPagePrivateDeployments(@Param("userId")String userId,@Param("start") int start, @Param("count") int count);
+
+    @Select({"SELECT d.deploymentId,d.deploymentName,u.username,d.sourceConfigureId,d.targetConfigureId,d.processId,d.state,d.updateTime " +
+            "FROM deployment d,user u " +
+            "WHERE d.userId = u.userId AND d.deploymentId IN (" +
+            "SELECT d.deploymentId  FROM deployment d,permission p WHERE d.deploymentId = p.deploymentId AND p.userId = #{userId}) ORDER BY updateTime DESC "})
+    List<DeploymentUseridDto> getUserAuthorizedDeployments(@Param("userId")String userId);
 }

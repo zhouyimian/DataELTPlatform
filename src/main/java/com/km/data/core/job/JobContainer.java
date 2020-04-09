@@ -319,4 +319,7 @@ public class JobContainer extends AbstractContainer {
         return endTimeStamp;
     }
 
+    public void setEndTimeStamp(long endTimeStamp) {
+        this.endTimeStamp = endTimeStamp;
+    }
 }

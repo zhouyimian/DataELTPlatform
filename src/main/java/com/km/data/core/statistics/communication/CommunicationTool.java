@@ -32,7 +32,10 @@ public final class CommunicationTool {
     public static final String TOTAL_READ_RECORDS = "totalReadRecords";
     public static final String TOTAL_READ_BYTES = "totalReadBytes";
 
-    public static final String TOTAL_ETL_RECORDS = "totalETLRecords";
+    public static final String TOTAL_INPUT_ETL_RECORDS = "totalInputETLRecords";
+    public static final String TOTAL_OUTPUT_ETL_RECORDS = "totalOutPutETLRecords";
+
+
     public static final String TOTAL_TASK_NUMBERS = "totalTasks";
     public static final String DONE_TASK_NUMBERS = "finishTasks";
 

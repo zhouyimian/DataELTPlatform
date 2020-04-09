@@ -97,10 +97,11 @@ public class TaskGroupContainer extends AbstractContainer {
             Communication lastTaskGroupContainerCommunication = new Communication();
 
             while (true) {
+                Thread.sleep(10000);
                 Map<Integer, Communication> communicationMap = containerCommunicator.getCommunicationMap();
                 //0.判断任务是否被停止或者其他taskgroup已经失败，导致该任务也失败
                 State nowState = this.tgCommunicationManager.getTaskGroupCommunication(this.taskGroupId).getState();
-                if(nowState==State.KILLED||nowState==State.FAILED){
+                if (nowState == State.KILLED || nowState == State.FAILED) {
                     //如果任务被停止或者其他taskgroup失败，需要把所有未完成的task设置为失败
                     for (Map.Entry<Integer, Communication> entry : communicationMap.entrySet()) {
                         Integer taskId = entry.getKey();
@@ -344,9 +345,9 @@ public class TaskGroupContainer extends AbstractContainer {
                     taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_BYTES, 0);
                     taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_RECORDS, 0);
                     taskCommunication.setLongCounter(CommunicationTool.WRITE_SUCCEED_BYTES, 0);
-                    taskCommunication.setLongCounter(CommunicationTool.TOTAL_ETL_RECORDS, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.TOTAL_INPUT_ETL_RECORDS, 0);
+                    taskCommunication.setLongCounter(CommunicationTool.TOTAL_OUTPUT_ETL_RECORDS, 0);
                     taskCommunication.setLongCounter(CommunicationTool.DONE_TASK_NUMBERS, 0);
-
 
                     reader.startRead(channel);
                     int recordSize = channel.size();
@@ -356,10 +357,11 @@ public class TaskGroupContainer extends AbstractContainer {
                     taskCommunication.setLongCounter(CommunicationTool.READ_SUCCEED_BYTES, recordBytes);
 
                     if (taskConfig.getConfiguration("ETL") != null) {
+                        taskCommunication.setLongCounter(CommunicationTool.TOTAL_INPUT_ETL_RECORDS, recordSize);
                         ETL.process(channel, taskConfig.getConfiguration("ETL"));
-                        taskCommunication.setLongCounter(CommunicationTool.TOTAL_ETL_RECORDS, recordSize);
                         recordSize = channel.size();
                         recordBytes = channel.getTotalBytes();
+                        taskCommunication.setLongCounter(CommunicationTool.TOTAL_OUTPUT_ETL_RECORDS, recordSize);
                     }
                     writer.startWrite(channel);
                     taskCommunication.setState(State.SUCCEEDED);

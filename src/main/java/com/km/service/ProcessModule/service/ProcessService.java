@@ -8,7 +8,6 @@ import com.km.service.common.exception.serviceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -62,4 +61,16 @@ public class ProcessService {
         return processMapper.getProcessCount();
     }
 
+    public List<ProcessUseridDto> getAllPrivateProcess(String userId) {
+        return processMapper.getAllPrivateProcess(userId);
+    }
+
+    public List<ProcessUseridDto> getPagePrivateProcess(String userId, int pageSize, int pageNumber) {
+        int start = (pageNumber-1)*pageSize;
+        return processMapper.getPagePrivateProcess(userId,start,pageSize);
+    }
+
+    public int getPrivateProcessCount(String userId) {
+        return processMapper.getPrivateProcessCount(userId);
+    }
 }

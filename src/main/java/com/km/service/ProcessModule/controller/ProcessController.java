@@ -8,6 +8,7 @@ import com.km.service.ProcessModule.domain.Process;
 import com.km.service.ProcessModule.dto.ProcessUseridDto;
 import com.km.service.ProcessModule.service.ProcessService;
 import com.km.service.UserModule.domain.User;
+import com.km.service.common.exception.serviceException;
 import com.km.utils.LoadConfigureUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,23 +32,16 @@ public class ProcessController {
     public Object getAllProcess(HttpServletRequest req) {
         int pageSize = Integer.parseInt(req.getParameter("pageSize"));
         int pageNumber = Integer.parseInt(req.getParameter("pageNumber"));
-        List<ProcessUseridDto> list = processService.getAllProcess(pageSize,pageNumber);
-        JSONArray processDesc = new JSONArray();
-        for(ProcessUseridDto dto:list){
-            JSONObject object  = JSONObject.parseObject(JSONObject.toJSON(dto).toString());
-            JSONArray jsonArray = JSONArray.parseArray(dto.getProcessContent());
-            int size = jsonArray.size();
-            object.put("input",jsonArray.getJSONObject(0).getString("pluginName"));
-            object.put("output",jsonArray.getJSONObject(size-1).getString("pluginName"));
-            processDesc.add(object);
-        }
+        List<ProcessUseridDto> list = processService.getAllProcess(pageSize, pageNumber);
+        JSONArray processDesc = richProcess(list);
+
         int totalSize = processService.getProcessCount();
-        int totalPages = totalSize/pageSize+(totalSize%pageSize==0?0:1);
+        int totalPages = totalSize / pageSize + (totalSize % pageSize == 0 ? 0 : 1);
         JSONObject message = new JSONObject();
-        message.put("pageSize",pageSize);
-        message.put("pageNumber",pageNumber);
-        message.put("totalPages",totalPages);
-        message.put("processDesc",processDesc);
+        message.put("pageSize", pageSize);
+        message.put("pageNumber", pageNumber);
+        message.put("totalPages", totalPages);
+        message.put("processDesc", processDesc);
         return JSONObject.toJSON(message);
     }
 
@@ -57,12 +51,11 @@ public class ProcessController {
         Map<String, Configuration> writer = LoadConfigureUtil.getWriterPlugNameToConf();
         Map<String, Configuration> etl = LoadConfigureUtil.getEtlPlugNameToConf();
         JSONObject message = new JSONObject();
-        message.put("readerPlugins",parseMap(reader));
-        message.put("writerPlugins",parseMap(writer));
-        message.put("etlPlugins",parseMap(etl));
+        message.put("readerPlugins", parseMap(reader));
+        message.put("writerPlugins", parseMap(writer));
+        message.put("etlPlugins", parseMap(etl));
         return JSONObject.toJSON(message);
     }
-
 
 
     @RequestMapping(value = "/getOneProcess", method = RequestMethod.POST)
@@ -79,9 +72,9 @@ public class ProcessController {
         String processContent = JSONObject.parseArray(content).toString();
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
-        processService.addProcess(processName,processContent,userId);
+        processService.addProcess(processName, processContent, userId);
         JSONObject message = new JSONObject();
-        message.put("message","创建流程成功");
+        message.put("message", "创建流程成功");
         return JSONObject.toJSON(message);
     }
 
@@ -90,7 +83,7 @@ public class ProcessController {
         String processId = req.getParameter("processId");
         processService.deleteProcess(processId);
         JSONObject message = new JSONObject();
-        message.put("message","删除流程成功");
+        message.put("message", "删除流程成功");
         return JSONObject.toJSON(message);
     }
 
@@ -100,14 +93,15 @@ public class ProcessController {
         String processName = req.getParameter("processName");
         String content = req.getParameter("processContent");
         String processContent = JSONObject.parseArray(content).toString();
-        processService.updateProcess(processId,processName,processContent);
+        processService.updateProcess(processId, processName, processContent);
         JSONObject message = new JSONObject();
-        message.put("message","更新流程成功");
+        message.put("message", "更新流程成功");
         return JSONObject.toJSON(message);
     }
 
     /**
      * 导出流程
+     *
      * @param req
      * @return
      */
@@ -116,7 +110,7 @@ public class ProcessController {
         String ids = req.getParameter("processIds");
         JSONArray processIds = JSONArray.parseArray(ids);
         JSONArray processJSONArray = new JSONArray();
-        for(int i = 0;i<processIds.size();i++){
+        for (int i = 0; i < processIds.size(); i++) {
             Process process = processService.getProcessByProcessId(processIds.get(i).toString());
             JSONObject message = new JSONObject();
             message.put("processName", process.getProcessName());
@@ -124,12 +118,13 @@ public class ProcessController {
             processJSONArray.add(message);
         }
         JSONObject message = new JSONObject();
-        message.put("contents",processJSONArray.toJSONString());
+        message.put("contents", processJSONArray.toJSONString());
         return JSONObject.toJSON(message);
     }
 
     /**
      * 导入流程
+     *
      * @param req
      * @return
      */
@@ -139,14 +134,14 @@ public class ProcessController {
         JSONArray processContents = JSONArray.parseArray(contents);
         User user = (User) req.getAttribute("user");
         String userId = user.getUserId();
-        for(int i = 0;i<processContents.size();i++){
+        for (int i = 0; i < processContents.size(); i++) {
             JSONObject oneProcess = processContents.getJSONObject(i);
             String processName = oneProcess.getString("processName");
             String processContent = oneProcess.getString("processContent");
-            processService.addProcess(processName,processContent,userId);
+            processService.addProcess(processName, processContent, userId);
         }
         JSONObject message = new JSONObject();
-        message.put("message","导入流程成功");
+        message.put("message", "导入流程成功");
         return JSONObject.toJSON(message);
     }
 
@@ -157,9 +152,9 @@ public class ProcessController {
         String newProcessName = req.getParameter("newProcessName");
         User user = (User) req.getAttribute("user");
         Process process = processService.getProcessByProcessId(processId);
-        processService.addProcess(newProcessName,process.getProcessContent(),user.getUserId());
+        processService.addProcess(newProcessName, process.getProcessContent(), user.getUserId());
         JSONObject message = new JSONObject();
-        message.put("message","复制流程成功");
+        message.put("message", "复制流程成功");
         return JSONObject.toJSON(message);
     }
 
@@ -167,23 +162,77 @@ public class ProcessController {
     @RequestMapping(value = "/batchDeleteProcess", method = RequestMethod.POST)
     public Object batchDeleteProcess(HttpServletRequest req) {
         String ids = req.getParameter("processIds");
+        User user = (User) req.getAttribute("user");
         JSONArray processIds = JSONArray.parseArray(ids);
-        for(int i = 0;i<processIds.size();i++) {
-            processService.deleteProcess(processIds.get(i).toString());
-        }
         JSONObject message = new JSONObject();
-        message.put("message","批量删除流程成功");
+        boolean isNotPermission = false;
+        for (int i = 0; i < processIds.size(); i++) {
+            Process process = processService.getProcessByProcessId(processIds.getString(i));
+            if (!process.getUserId().equals(user.getUserId())) {
+                isNotPermission = true;
+                break;
+            }
+        }
+        if (isNotPermission) {
+            throw new serviceException("要删除的流程中有部分流程无删除权限!");
+        } else {
+            for (int i = 0; i < processIds.size(); i++)
+                processService.deleteProcess(processIds.get(i).toString());
+            message.put("message", "批量删除流程成功");
+        }
         return JSONObject.toJSON(message);
     }
 
 
-
     private Object parseMap(Map<String, Configuration> configurationMap) {
         JSONArray array = new JSONArray();
-        for(Map.Entry<String,Configuration> entry:configurationMap.entrySet()){
+        for (Map.Entry<String, Configuration> entry : configurationMap.entrySet()) {
             Configuration value = entry.getValue();
             array.add(JSONObject.parseObject(value.toJSON()));
         }
         return JSONObject.toJSON(array);
+    }
+
+
+    @RequestMapping(value = "/getAllPrivateProcess", method = RequestMethod.POST)
+    public Object getAllPrivateProcess(HttpServletRequest req) {
+        User user = (User) req.getAttribute("user");
+        JSONObject message = new JSONObject();
+        JSONArray processDesc;
+        List<ProcessUseridDto> list;
+        int pageSize;
+        int pageNumber;
+        int totalPages;
+        if (req.getParameter("pageSize") == null && req.getParameter("pageNumber") == null) {
+            list = processService.getAllPrivateProcess(user.getUserId());
+            pageSize = list.size();
+            pageNumber = 1;
+            totalPages = 1;
+        } else {
+            pageSize = Integer.parseInt(req.getParameter("pageSize"));
+            pageNumber = Integer.parseInt(req.getParameter("pageNumber"));
+            list = processService.getPagePrivateProcess(user.getUserId(), pageSize, pageNumber);
+            int totalSize = processService.getPrivateProcessCount(user.getUserId());
+            totalPages = totalSize / pageSize + (totalSize % pageSize == 0 ? 0 : 1);
+        }
+        processDesc = richProcess(list);
+        message.put("pageSize", pageSize);
+        message.put("pageNumber", pageNumber);
+        message.put("totalPages", totalPages);
+        message.put("processDesc", processDesc);
+        return JSONObject.toJSON(message);
+    }
+
+    private JSONArray richProcess(List<ProcessUseridDto> list) {
+        JSONArray result = new JSONArray();
+        for (ProcessUseridDto dto : list) {
+            JSONObject object = JSONObject.parseObject(JSONObject.toJSON(dto).toString());
+            JSONArray jsonArray = JSONArray.parseArray(dto.getProcessContent());
+            int size = jsonArray.size();
+            object.put("input", jsonArray.getJSONObject(0).getString("pluginName"));
+            object.put("output", jsonArray.getJSONObject(size - 1).getString("pluginName"));
+            result.add(object);
+        }
+        return result;
     }
 }
